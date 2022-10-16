@@ -11,6 +11,7 @@
 #include "fast-fair/btree.h"
 #include "fast-fair/btree_old.h"
 #include "nvm_alloc.h"
+#include "apex/apex.h"
 
 #ifdef USE_MEM
 
@@ -128,7 +129,7 @@ namespace dbInter
     {
       std::cout << "NVM WRITE : " << NVM::pmem_size << std::endl;
       NVM::show_stat();
-      tree_ -> PrintInfo();
+      tree_->PrintInfo();
     }
 
     void Close()
@@ -329,11 +330,13 @@ namespace dbInter
 
   class LIPPDb : public ycsbc::KvDB
   {
-    typedef LIPP<uint64_t,uint64_t> lipp_t;
-    public:
-    LIPPDb():lipp_(nullptr){}
-    LIPPDb(lipp_t *lipp):lipp_(lipp){}
-    ~LIPPDb(){
+    typedef LIPP<uint64_t, uint64_t> lipp_t;
+
+  public:
+    LIPPDb() : lipp_(nullptr) {}
+    LIPPDb(lipp_t *lipp) : lipp_(lipp) {}
+    ~LIPPDb()
+    {
       delete lipp_;
     }
     void Init()
@@ -350,7 +353,7 @@ namespace dbInter
     }
     int Put(uint64_t key, uint64_t value)
     {
-      lipp_->insert(key,value);
+      lipp_->insert(key, value);
       return 1;
     }
     int Get(uint64_t key, uint64_t &value)
@@ -359,20 +362,24 @@ namespace dbInter
       // assert(value == key);
       return 1;
     }
-    int Update(uint64_t key, uint64_t value){
+    int Update(uint64_t key, uint64_t value)
+    {
       return 1;
     }
-    int Delete(uint64_t key){
+    int Delete(uint64_t key)
+    {
       return 1;
     }
-    int Scan(uint64_t start_key, int len, std::vector<std::pair<uint64_t, uint64_t>> &results){
+    int Scan(uint64_t start_key, int len, std::vector<std::pair<uint64_t, uint64_t>> &results)
+    {
       return 1;
     }
     void PrintStatic()
     {
       NVM::show_stat();
     }
-    private:
+
+  private:
     lipp_t *lipp_;
   };
 
@@ -386,8 +393,9 @@ namespace dbInter
 
   public:
     XIndexDb() : xindex_(nullptr) {}
-    XIndexDb(int bg_num, int work_num): xindex_(nullptr),
-         bg_num_(bg_num), work_num_(work_num) {
+    XIndexDb(int bg_num, int work_num) : xindex_(nullptr),
+                                         bg_num_(bg_num), work_num_(work_num)
+    {
     }
     XIndexDb(xindex_t *xindex) : xindex_(xindex) {}
     virtual ~XIndexDb()
@@ -629,6 +637,82 @@ namespace dbInter
     alex_t *alex_;
   };
 
+  class ApexDB : public ycsbc::KvDB
+  {
+    typedef uint64_t KEY_TYPE;
+    typedef uint64_t PAYLOAD_TYPE;
+#ifdef USE_MEM
+    using Alloc = std::allocator<std::pair<KEY_TYPE, PAYLOAD_TYPE>>;
+#else
+    using Alloc = NVM::allocator<std::pair<KEY_TYPE, PAYLOAD_TYPE>>;
+#endif
+    typedef alex::Apex<KEY_TYPE, PAYLOAD_TYPE, alex::AlexCompare, Alloc> apex_t;
+
+  public:
+    ApexDB() : apex_(nullptr) {}
+    ApexDB(apex_t *apex) : apex_(apex) {}
+    virtual ~ApexDB()
+    {
+      delete apex_;
+    }
+
+    void Init()
+    {
+      NVM::data_init();
+      apex_ = new apex_t();
+      NVM::pmem_size = 0;
+    }
+
+    void Bulk_load(const std::pair<uint64_t, uint64_t> data[], int size)
+    {
+      apex_->bulk_load(data, size);
+    }
+
+    void Info()
+    {
+      std::cout << "NVM WRITE : " << NVM::pmem_size << std::endl;
+      NVM::show_stat();
+      apex_->PrintInfo();
+    }
+
+    int Put(uint64_t key, uint64_t value)
+    {
+      apex_->insert(key, value);
+      return 1;
+    }
+    int Get(uint64_t key, uint64_t &value)
+    {
+      apex_->search(key, value);
+      // assert(value == key);
+      return 1;
+    }
+    int Update(uint64_t key, uint64_t value)
+    {
+      apex_->update(key, value);
+      NVM::Mem_persist(addrs, sizeof(uint64_t));
+      return 1;
+    }
+    int Delete(uint64_t key)
+    {
+      apex_->erase(key);
+      return 1;
+    }
+    int Scan(uint64_t start_key, int len, std::vector<std::pair<uint64_t, uint64_t>> &results)
+    {
+      apex_->range_scan_by_size(key, len, results);
+      return 1;
+    }
+    void PrintStatic()
+    {
+      // std::cerr << "Alevel average cost: " << Common::timers["ABLevel_times"].avg_latency() << std::endl;
+      // std::cerr << "Clevel average cost: " << Common::timers["CLevel_times"].avg_latency() << std::endl;
+      NVM::show_stat();
+    }
+
+  private:
+    apex_t *apex_;
+  };
+
   class fastfairDB : public ycsbc::KvDB
   {
     typedef uint64_t KEY_TYPE;
@@ -782,21 +866,24 @@ namespace dbInter
       //   num_entries++;
       //   it.next();
       // }
-      let_->Scan(start_key,len,results);
+      let_->Scan(start_key, len, results);
       return 1;
     }
 
-    int MultPut(uint64_t key, uint64_t value, int work_id) { 
+    int MultPut(uint64_t key, uint64_t value, int work_id)
+    {
       let_->Put(key, value);
       return 1;
     }
-    
-    int MultGet(uint64_t key, uint64_t &value, int work_id) { 
+
+    int MultGet(uint64_t key, uint64_t &value, int work_id)
+    {
       let_->Get(key, value);
       return 1;
     }
 
-    int MultDelete(uint64_t key, int work_id) { 
+    int MultDelete(uint64_t key, int work_id)
+    {
       let_->Delete(key);
       return 1;
     }
@@ -814,4 +901,4 @@ namespace dbInter
     combotree::letree *let_;
   };
 
-} //namespace dbInter
+} // namespace dbInter
