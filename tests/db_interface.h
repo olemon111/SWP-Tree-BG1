@@ -12,6 +12,7 @@
 #include "fast-fair/btree_old.h"
 #include "nvm_alloc.h"
 #include "apex/apex.h"
+#include "lbtree/lbtree.h"
 
 #ifdef USE_MEM
 
@@ -171,6 +172,69 @@ namespace dbInter
 
   private:
     btree *tree_;
+  };
+
+  class LBTreeDB : public ycsbc::KvDB
+  {
+  public:
+    LBTreeDB() : tree_(nullptr) {}
+    LBTreeDB(lbtree *tree) : tree_(tree) {}
+    virtual ~LBTreeDB() {}
+    void Init()
+    {
+      NVM::data_init();
+      char *nvm_addr = (char *)nvmpool_alloc(4 * KB);
+      tree_ = new lbtree(nvm_addr, false);
+      NVM::pmem_size = 0;
+    }
+
+    void Info()
+    {
+      std::cout << "NVM WRITE : " << NVM::pmem_size << std::endl;
+      NVM::show_stat();
+      tree_->PrintInfo();
+    }
+
+    void Close()
+    {
+    }
+    int Put(uint64_t key, uint64_t value)
+    {
+      tree_->insert(key, (void *)value);
+      return 1;
+    }
+    int Get(uint64_t key, uint64_t &value)
+    {
+      int pos;
+      value = (uint64_t)tree_->lookup(key, &pos);
+      return 1;
+    }
+    int Update(uint64_t key, uint64_t value)
+    {
+      tree_->del(key);
+      tree_->insert(key, (void *)value);
+      return 1;
+    }
+
+    int Delete(uint64_t key)
+    {
+      tree_->del(key);
+      return 1;
+    }
+
+    int Scan(uint64_t start_key, int len, std::vector<std::pair<uint64_t, uint64_t>> &results)
+    {
+      // TODO: implement scan
+      return 1;
+    }
+    void PrintStatic()
+    {
+      NVM::show_stat();
+      tree_->PrintInfo();
+    }
+
+  private:
+    lbtree *tree_;
   };
 
   class ComboTreeDb : public ycsbc::KvDB
