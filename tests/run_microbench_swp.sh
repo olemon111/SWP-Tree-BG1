@@ -12,27 +12,17 @@ function Run() {
 
     # # gdb --args #
 
-    # microbench
-
-    rm -f /mnt/HDD/*
-    Loadname="ycsb-read"
-    date | tee microbench-${dbname}-${Loadname}.txt
-    LD_PRELOAD=libhugetlbfs.so HUGETLB_MORECORE=yes numactl --cpubind=0 --membind=0 ${BUILDDIR}/microbench --dbname ${dbname} --load-size ${loadnum} \
-    --put-size 0 --get-size ${opnum} --workload ${WorkLoad} \
-    --loadstype 1 --theta ${theta} -t $thread | tee -a microbench-${dbname}-${Loadname}.txt
-
-    echo "${BUILDDIR}/microbench --dbname ${dbname} --load-size ${loadnum} "\
-    "--put-size ${0} --get-size ${opnum} --workload ${WorkLoad} --loadstype 1 --theta ${theta} -t $thread"
+    # microbench_swp
 
     # rm -f /mnt/AEP0/*
-    # Loadname="ycsb-write"
-    # date | tee microbench-${dbname}-${Loadname}.txt
-    # LD_PRELOAD=libhugetlbfs.so HUGETLB_MORECORE=yes numactl --cpubind=0 --membind=0 ${BUILDDIR}/microbench --dbname ${dbname} --load-size ${loadnum} \
-    # --put-size ${opnum} --get-size 0 --workload ${WorkLoad} \
-    # --loadstype 1 --theta ${theta} -t $thread | tee -a microbench-${dbname}-${Loadname}.txt
+    Loadname="ycsb-read"
+    date | tee microbench-swp-${dbname}-${Loadname}.txt
+    LD_PRELOAD=libhugetlbfs.so HUGETLB_MORECORE=yes numactl --cpubind=0 --membind=0 ${BUILDDIR}/microbench_swp --dbname ${dbname} --load-size ${loadnum} \
+    --put-size 0 --get-size ${opnum} --workload ${WorkLoad} \
+    --loadstype 1 --theta ${theta} -t $thread | tee -a microbench-swp-${dbname}-${Loadname}.txt
 
-    # echo "${BUILDDIR}/microbench --dbname ${dbname} --load-size ${loadnum} "\
-    # "--put-size ${0} --get-size ${opnum} --workload ${WorkLoad} --loadstype 1 --theta ${theta} -t $thread"
+    echo "${BUILDDIR}/microbench_swp --dbname ${dbname} --load-size ${loadnum} "\
+    "--put-size ${0} --get-size ${opnum} --workload ${WorkLoad} --loadstype 1 --theta ${theta} -t $thread"
 
 }
 

@@ -151,7 +151,7 @@ std::vector<T> read_data_from_osm(
 
 template <typename T>
 std::vector<T> load_data_from_osm(
-    const std::string dataname = "/home/zzy/dataset/generate_random_osm_cellid.dat")
+    const std::string dataname = "/home/lbl/dataset/generate_random_osm_cellid.dat")
 {
     return util::load_data<T>(dataname);
 }
@@ -174,7 +174,7 @@ std::vector<uint64_t> generate_random_ycsb(size_t op_num)
                                            std::cerr << "generate: " << cnt << "\r";
                                      } });
 
-    const std::string output = "/home/zzy/dataset/generate_random_ycsb.dat";
+    const std::string output = "/home/lbl/dataset/generate_random_ycsb.dat";
     data.assign(unique_keys.begin(), unique_keys.end());
     random_shuffle(data.begin(), data.end());
     std::ofstream out(output, std::ios::binary);
@@ -209,7 +209,7 @@ std::vector<uint64_t> generate_uniform_random(size_t op_num)
                                       }
                                      } });
 
-    const std::string output = "/home/zzy/dataset/generate_uniform_random.dat";
+    const std::string output = "/home/lbl/dataset/generate_uniform_random.dat";
     data.assign(unique_keys.begin(), unique_keys.end());
     random_shuffle(data.begin(), data.end());
     std::ofstream out(output, std::ios::binary);
@@ -333,10 +333,10 @@ int main(int argc, char *argv[])
     switch (Loads_type)
     {
     case -2:
-        data_base = read_data_from_osm<uint64_t>(load_file, get_longlat, "/home/zzy/dataset/generate_random_osm_longlat.dat"); // LLT
+        data_base = read_data_from_osm<uint64_t>(load_file, get_longlat, "/home/lbl/dataset/generate_random_osm_longlat.dat"); // LLT
         break;
     case -1:
-        data_base = read_data_from_osm<uint64_t>(load_file, get_longtitude, "/home/zzy/dataset/generate_random_osm_longtitudes.dat"); // LTD
+        data_base = read_data_from_osm<uint64_t>(load_file, get_longtitude, "/home/lbl/dataset/generate_random_osm_longtitudes.dat"); // LTD
         break;
     case 0:
         data_base = generate_uniform_random(LOAD_SIZE + PUT_SIZE * 10);
@@ -345,19 +345,19 @@ int main(int argc, char *argv[])
         data_base = generate_random_ycsb(LOAD_SIZE + PUT_SIZE * 10);
         break;
     case 2:
-        data_base = load_data_from_osm<uint64_t>("/home/zzy/dataset/generate_random_osm_longtitudes.dat");
+        data_base = load_data_from_osm<uint64_t>("/home/lbl/dataset/generate_random_osm_longtitudes.dat");
         break;
     case 3:
-        data_base = load_data_from_osm<uint64_t>("/home/zzy/dataset/generate_random_osm_longlat.dat");
+        data_base = load_data_from_osm<uint64_t>("/home/lbl/dataset/generate_random_osm_longlat.dat");
         break;
     case 4:
-        data_base = load_data_from_osm<uint64_t>("/home/zzy/dataset/generate_uniform_random.dat");
+        data_base = load_data_from_osm<uint64_t>("/home/lbl/dataset/generate_uniform_random.dat");
         break;
     case 5:
-        data_base = load_data_from_osm<uint64_t>("/home/zzy/dataset/lognormal.dat");
+        data_base = load_data_from_osm<uint64_t>("/home/lbl/dataset/lognormal.dat");
         break;
     case 6:
-        data_base = load_data_from_osm<uint64_t>("/home/zzy/dataset/generate_random_ycsb.dat");
+        data_base = load_data_from_osm<uint64_t>("/home/lbl/dataset/generate_random_ycsb.dat");
         break;
     default:
         data_base = generate_uniform_random(LOAD_SIZE + PUT_SIZE * 8);
