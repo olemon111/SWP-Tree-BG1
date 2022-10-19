@@ -1,83 +1,56 @@
 #!/bin/bash
 BUILDDIR=$(dirname "$0")/../build/
-WorkLoad="/home/zzy/dataset/asia-latest.csv"
-Loadname="longlat-400m"
+WorkLoad=""
+Loadname="ycsb-swp"
 function Run() {
     dbname=$1
     loadnum=$2 
     opnum=$3
     scansize=$4
     thread=$5
+    theta=$6
 
     # # gdb --args #
 
     # microbench
-    rm -f /mnt/AEP0/*
-    Loadname="longlat-400m"
+
+    rm -f /mnt/HDD/*
+    Loadname="ycsb-read"
     date | tee microbench-${dbname}-${Loadname}.txt
     LD_PRELOAD=libhugetlbfs.so HUGETLB_MORECORE=yes numactl --cpubind=0 --membind=0 ${BUILDDIR}/microbench --dbname ${dbname} --load-size ${loadnum} \
-    --put-size ${opnum} --get-size ${opnum} --workload ${WorkLoad} \
-    --loadstype 3 -t $thread | tee -a microbench-${dbname}-${Loadname}.txt
+    --put-size 0 --get-size ${opnum} --workload ${WorkLoad} \
+    --loadstype 1 --theta ${theta} -t $thread | tee -a microbench-${dbname}-${Loadname}.txt
 
     echo "${BUILDDIR}/microbench --dbname ${dbname} --load-size ${loadnum} "\
-    "--put-size ${opnum} --get-size ${opnum} --workload ${WorkLoad} --loadstype 3 -t $thread"
+    "--put-size ${0} --get-size ${opnum} --workload ${WorkLoad} --loadstype 1 --theta ${theta} -t $thread"
 
-    rm -f /mnt/AEP0/*
-    Loadname="ycsb-400m"
-    date | tee microbench-${dbname}-${Loadname}.txt
-    LD_PRELOAD=libhugetlbfs.so HUGETLB_MORECORE=yes numactl --cpubind=0 --membind=0 ${BUILDDIR}/microbench --dbname ${dbname} --load-size ${loadnum} \
-    --put-size ${opnum} --get-size ${opnum} --workload ${WorkLoad} \
-    --loadstype 6 -t $thread | tee -a microbench-${dbname}-${Loadname}.txt
-
-    echo "${BUILDDIR}/microbench --dbname ${dbname} --load-size ${loadnum} "\
-    "--put-size ${opnum} --get-size ${opnum} --workload ${WorkLoad} --loadstype 6 -t $thread"
-
-    # Loadname="lognormal-150m"
-    # loadnum=150000000
-    # date | tee microbench-unsort-${dbname}-${Loadname}.txt
-    # numactl --cpubind=0 --membind=0 ${BUILDDIR}/microbench --dbname ${dbname} --load-size ${loadnum} \
-    # --put-size ${opnum} --get-size ${opnum} --workload ${WorkLoad} \
-    # --loadstype 5 -t $thread | tee -a microbench-unsort-${dbname}-${Loadname}.txt
+    # rm -f /mnt/AEP0/*
+    # Loadname="ycsb-write"
+    # date | tee microbench-${dbname}-${Loadname}.txt
+    # LD_PRELOAD=libhugetlbfs.so HUGETLB_MORECORE=yes numactl --cpubind=0 --membind=0 ${BUILDDIR}/microbench --dbname ${dbname} --load-size ${loadnum} \
+    # --put-size ${opnum} --get-size 0 --workload ${WorkLoad} \
+    # --loadstype 1 --theta ${theta} -t $thread | tee -a microbench-${dbname}-${Loadname}.txt
 
     # echo "${BUILDDIR}/microbench --dbname ${dbname} --load-size ${loadnum} "\
-    # "--put-size ${opnum} --get-size ${opnum} --workload ${WorkLoad} --loadstype 5 -t $thread"
+    # "--put-size ${0} --get-size ${opnum} --workload ${WorkLoad} --loadstype 1 --theta ${theta} -t $thread"
 
-    rm -f /mnt/AEP0/*
-    Loadname="longtitude-200m"
-    loadnum=250000000
-    date | tee microbench-${dbname}-${Loadname}.txt
-    LD_PRELOAD=libhugetlbfs.so HUGETLB_MORECORE=yes numactl --cpubind=0 --membind=0 ${BUILDDIR}/microbench --dbname ${dbname} --load-size ${loadnum} \
-    --put-size ${opnum} --get-size ${opnum} --workload ${WorkLoad} \
-    --loadstype 2 -t $thread | tee -a microbench-${dbname}-${Loadname}.txt
-
-    echo "${BUILDDIR}/microbench --dbname ${dbname} --load-size ${loadnum} "\
-    "--put-size ${opnum} --get-size ${opnum} --workload ${WorkLoad} --loadstype 2 -t $thread"
-
-    # expandtest
-    # date | tee microbench-expand-times-${dbname}-${Loadname}.txt
-    # numactl --cpubind=0 --membind=0 ${BUILDDIR}/microbench --dbname ${dbname} --load-size ${loadnum} \
-    # --put-size ${opnum} --get-size ${opnum} --workload ${WorkLoad} \
-    # --loadstype 3 -t $thread | tee -a microbench-expand-times-${dbname}-${Loadname}.txt
-
-    # echo "${BUILDDIR}/microbench --dbname ${dbname} --load-size ${loadnum} "\
-    # "--put-size ${opnum} --get-size ${opnum} --workload ${WorkLoad} --loadstype 3 -t $thread"
 }
 
-# DBName: combotree fastfair pgm xindex alex
 function run_all() {
-    dbs="letree fastfair pgm xindex"
+    dbs="fastfair apex lbtree"
     for dbname in $dbs; do
         echo "Run: " $dbname
-        Run $dbname $1 $2 $3 1
+        Run $dbname $1 $2 $3 1 $5
         sleep 100
     done
 }
 
 function main() {
-    dbname="combotree"
-    loadnum=4000000
-    opnum=1000000
-    scansize=4000000
+    dbname="fastfair"
+    loadnum=2000000
+    opnum=10000000
+    scansize=0
+    theta=0.99
     thread=1
     if [ $# -ge 1 ]; then
         dbname=$1
@@ -94,20 +67,18 @@ function main() {
     if [ $# -ge 5 ]; then
         thread=$5
     fi
+    if [ $# -ge 6 ]; then
+        theta=$6
+    fi
     if [ $dbname == "all" ]; then
-        run_all $loadnum $opnum $scansize $thread
+        run_all $loadnum $opnum $scansize $thread $theta
     else
-        echo "Run $dbname $loadnum $opnum $scansize $thread"
-        Run $dbname $loadnum $opnum $scansize $thread
+        echo "Run $dbname $loadnum $opnum $scansize $thread $theta"
+        Run $dbname $loadnum $opnum $scansize $thread $theta
     fi 
 }
-# main fastfair 400000000 10000000 100000 1
-# main xindex 200000000 10000000 100000 1
-# main pgm 400000000 10000000 100000 1
-# main letree 230000000 10000000 40000000 1
-# main lipp 200000000 10000000 100000 1
-# main xindex 200000000 10000000 100000 1
-# main lipp 150000000 10000000 100000 1
-main letree 400000000 10000000 100000 1
-# main all 400000000 10000000 100000 1
-# main alex 10000 1000 100000 1
+
+main fastfair 2000000 10000000 0 1 0.99
+# main apex 2000000 10000000 0 1
+# main lbtree 2000000 10000000 0 1
+# main all 2000000 10000000 0 1
