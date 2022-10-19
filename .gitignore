@@ -1,6 +1,6 @@
 ## Test
 a.out
-*.txt
+# *.txt
 *.xlsx
 
 *.svg
