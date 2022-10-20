@@ -170,10 +170,10 @@ add_executable(nvm_test tests/nvm_test.cc)
 target_link_libraries(nvm_test pmem)
 add_test(nvm_test nvm_test)
 
-# # microbench
-add_executable(microbench tests/micro_bench.cc)
-target_link_libraries(microbench combotree)
-add_test(microbench microbench)
+# # # microbench
+# add_executable(microbench tests/micro_bench.cc)
+# target_link_libraries(microbench combotree)
+# add_test(microbench microbench)
 
 # # microbench_swp
 add_executable(microbench_swp tests/micro_bench_swp.cc)
