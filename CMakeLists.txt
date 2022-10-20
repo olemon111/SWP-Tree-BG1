@@ -192,10 +192,11 @@ add_test(microbench_swp microbench_swp)
 # #################### Epoch Reclaim ####################
 FetchContent_Declare(
   epoch_reclaimer
-  GIT_REPOSITORY https://github.com/XiangpengHao/epoch-reclaimer.git
+  GIT_REPOSITORY git@github.com:XiangpengHao/VeryPM.git
   GIT_TAG master
 )
 
+# GIT_REPOSITORY https://github.com/XiangpengHao/epoch-reclaimer.git
 if(NOT epoch_reclaimer_POPULATED)
   FetchContent_Populate(epoch_reclaimer)
   include_directories(${epoch_reclaimer_SOURCE_DIR})
