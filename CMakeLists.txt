@@ -54,8 +54,8 @@ set(PMEMKV_THRESHOLD 10000)
 set(ENTRY_SIZE_FACTOR 1.2)
 
 # configure_file(
-#   "${PROJECT_SOURCE_DIR}/src/combotree_config.h.in"
-#   "${PROJECT_SOURCE_DIR}/src/combotree_config.h"
+# "${PROJECT_SOURCE_DIR}/src/combotree_config.h.in"
+# "${PROJECT_SOURCE_DIR}/src/combotree_config.h"
 # )
 
 # -march=native used to detect CPU flags and use corrosponding clflush instruction
@@ -84,16 +84,16 @@ include_directories(${MKL_INCLUDE_DIRECTORY})
 include_directories(include)
 
 # set(COMBO_TREE_SRC
-#   src/alevel.cc
-#   src/enviroment.cc
-#   src/pgm_index.cc
-#   src/rmi_index.cc
-#   src/learn_index.cc
-#   src/blevel.cc
-#   src/bentry.cc
-#   src/clevel.cc
-#   src/combotree.cc
-#   src/pmemkv.cc
+# src/alevel.cc
+# src/enviroment.cc
+# src/pgm_index.cc
+# src/rmi_index.cc
+# src/learn_index.cc
+# src/blevel.cc
+# src/bentry.cc
+# src/clevel.cc
+# src/combotree.cc
+# src/pmemkv.cc
 # )
 
 # add_library(combotree SHARED ${COMBO_TREE_SRC})
@@ -117,6 +117,7 @@ include_directories(include)
 
 # Unit Test
 enable_testing()
+
 # include_directories(src)
 
 # # # generate_data
@@ -177,6 +178,7 @@ enable_testing()
 
 # # microbench_swp
 add_executable(microbench_swp tests/micro_bench_swp.cc)
+
 # target_link_libraries(microbench_swp combotree)
 add_test(microbench_swp microbench_swp)
 
@@ -188,6 +190,32 @@ add_test(microbench_swp microbench_swp)
 # add_executable(ycsb-mem tests/ycsb-mem.cc)
 # target_link_libraries(ycsb-mem combotree)
 # add_test(ycsb-mem ycsb-mem)
+add_definitions(-DPMEM)
+add_definitions(-DPMDK)
+message(STATUS "Persistence support: PMDK")
+
+# #################### PMDK ####################
+set(PMDK_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/pmdk")
+ExternalProject_Add(PMDK
+  GIT_REPOSITORY git@github.com:XiangpengHao/pmdk.git
+  GIT_TAG addr-patch
+  BUILD_IN_SOURCE 1
+  BUILD_COMMAND $(MAKE) EXTRA_CFLAGS=-Wno-error
+  PREFIX ${PMDK_PREFIX}
+  CONFIGURE_COMMAND ""
+  INSTALL_COMMAND ""
+  LOG_DOWNLOAD ON
+  LOG_CONFIGURE ON
+  LOG_BUILD ON
+)
+
+include_directories(${PMDK_PREFIX}/src/PMDK/src/include)
+
+if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+  link_directories(${PMDK_PREFIX}/src/PMDK/src/debug)
+else()
+  link_directories(${PMDK_PREFIX}/src/PMDK/src/nondebug)
+endif()
 
 # #################### Epoch Reclaim ####################
 FetchContent_Declare(
