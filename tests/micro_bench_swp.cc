@@ -371,45 +371,13 @@ int main(int argc, char *argv[])
     {
         db = new FastFairDb();
     }
-    if (dbName == "apex")
-    {
-        db = new ApexDB();
-    }
-    if (dbName == "lbtree")
-    {
-        db = new LBTreeDB();
-    }
-    else if (dbName == "pgm")
-    {
-        db = new PGMDynamicDb();
-    }
-    else if (dbName == "xindex")
-    {
-        db = new XIndexDb();
-    }
-    // else if (dbName == "alex")
-    // {
-    //     db = new AlexDB();
-    // }
     else if (dbName == "apex")
     {
         db = new ApexDB();
     }
-    else if (dbName == "stx")
+    else if (dbName == "lbtree")
     {
-        db = new StxDB();
-    }
-    else if (dbName == "letree")
-    {
-        db = new LetDB();
-    }
-    else if (dbName == "lipp")
-    {
-        db = new LIPPDb();
-    }
-    else if (dbName == "combotree")
-    {
-        db = new ComboTreeDb();
+        db = new LBTreeDB();
     }
     else
     {
