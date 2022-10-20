@@ -9,7 +9,7 @@
 // #include "combotree/combotree.h"
 // #include "../src/combotree_config.h"
 #include "fast-fair/btree.h"
-#include "fast-fair/btree_old.h"
+// #include "fast-fair/btree_old.h"
 #include "nvm_alloc.h"
 #include "apex/apex.h"
 #include "lbtree/lbtree.h"
