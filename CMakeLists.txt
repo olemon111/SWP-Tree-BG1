@@ -187,3 +187,15 @@ add_test(ycsb ycsb)
 add_executable(ycsb-mem tests/ycsb-mem.cc)
 target_link_libraries(ycsb-mem combotree)
 add_test(ycsb-mem ycsb-mem)
+
+# #################### Epoch Reclaim ####################
+FetchContent_Declare(
+  epoch_reclaimer
+  GIT_REPOSITORY https://github.com/XiangpengHao/epoch-reclaimer.git
+  GIT_TAG master
+)
+
+if(NOT epoch_reclaimer_POPULATED)
+  FetchContent_Populate(epoch_reclaimer)
+  include_directories(${epoch_reclaimer_SOURCE_DIR})
+endif()
