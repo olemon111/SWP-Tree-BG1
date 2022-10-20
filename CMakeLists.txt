@@ -6,6 +6,7 @@ cmake_minimum_required(VERSION 3.0)
 # SET(CMAKE_CXX_COMPILER /usr/local/bin/g++)
 set(MKL_LINK_DIRECTORY "/opt/intel/mkl/lib/intel64")
 set(MKL_INCLUDE_DIRECTORY "/opt/intel/mkl/include")
+include(FetchContent)
 
 # use `cmake -DSERVER:BOOL=ON ..` when running in server
 option(SERVER "Run in server" ON)
