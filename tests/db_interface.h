@@ -17,13 +17,13 @@
 #ifdef USE_MEM
 
 //#include "mem/pgm/pgm_index_dynamic.hpp"
-#include "learnindex/pgm_index_dynamic.hpp"
+// #include "learnindex/pgm_index_dynamic.hpp"
 #include "mem/xindex/xindex_impl.h"
 //#include "xindex/xindex_impl.h"
 // #include "alex/alex.h"
 #else
-#include "learnindex/pgm_index_dynamic.hpp"
-#include "learnindex/rmi.h"
+// #include "learnindex/pgm_index_dynamic.hpp"
+// #include "learnindex/rmi.h"
 #include "xindex/xindex_impl.h"
 // #include "alex/alex.h"
 #endif
@@ -307,90 +307,90 @@ namespace dbInter
     ComboTree *tree_;
   };
 
-  class PGMDynamicDb : public ycsbc::KvDB
-  {
-#ifdef USE_MEM
-    using PGMType = pgm::PGMIndex<uint64_t>;
-#else
-    using PGMType = PGM_OLD_NVM::PGMIndex<uint64_t>;
-#endif
-    typedef pgm::DynamicPGMIndex<uint64_t, char *, PGMType> DynamicPGM;
+  //   class PGMDynamicDb : public ycsbc::KvDB
+  //   {
+  // #ifdef USE_MEM
+  //     using PGMType = pgm::PGMIndex<uint64_t>;
+  // #else
+  //     using PGMType = PGM_OLD_NVM::PGMIndex<uint64_t>;
+  // #endif
+  //     typedef pgm::DynamicPGMIndex<uint64_t, char *, PGMType> DynamicPGM;
 
-  public:
-    PGMDynamicDb() : pgm_(nullptr) {}
-    PGMDynamicDb(DynamicPGM *pgm) : pgm_(pgm) {}
-    virtual ~PGMDynamicDb()
-    {
-      delete pgm_;
-    }
+  //   public:
+  //     PGMDynamicDb() : pgm_(nullptr) {}
+  //     PGMDynamicDb(DynamicPGM *pgm) : pgm_(pgm) {}
+  //     virtual ~PGMDynamicDb()
+  //     {
+  //       delete pgm_;
+  //     }
 
-    void Init()
-    {
-      NVM::data_init();
-      pgm_ = new DynamicPGM();
-      NVM::pmem_size = 0;
-    }
+  //     void Init()
+  //     {
+  //       NVM::data_init();
+  //       pgm_ = new DynamicPGM();
+  //       NVM::pmem_size = 0;
+  //     }
 
-    void Bulk_load(const std::pair<uint64_t, uint64_t> data[], int size)
-    {
+  //     void Bulk_load(const std::pair<uint64_t, uint64_t> data[], int size)
+  //     {
 
-      if (pgm_)
-        delete pgm_;
-      pgm_ = new DynamicPGM(&data[0], &data[0] + size);
-    }
+  //       if (pgm_)
+  //         delete pgm_;
+  //       pgm_ = new DynamicPGM(&data[0], &data[0] + size);
+  //     }
 
-    void Info()
-    {
-      std::cout << "NVM WRITE : " << NVM::pmem_size << std::endl;
-      NVM::show_stat();
-    }
+  //     void Info()
+  //     {
+  //       std::cout << "NVM WRITE : " << NVM::pmem_size << std::endl;
+  //       NVM::show_stat();
+  //     }
 
-    void Begin_trans()
-    {
-      pgm_->trans_to_read();
-    }
-    int Put(uint64_t key, uint64_t value)
-    {
-      pgm_->insert(key, (char *)value);
-      return 1;
-    }
-    int Get(uint64_t key, uint64_t &value)
-    {
-      auto it = pgm_->find(key);
-      value = (uint64_t)it->second;
-      return 1;
-    }
-    int Update(uint64_t key, uint64_t value)
-    {
-      pgm_->insert(key, (char *)value);
-      return 1;
-    }
+  //     void Begin_trans()
+  //     {
+  //       pgm_->trans_to_read();
+  //     }
+  //     int Put(uint64_t key, uint64_t value)
+  //     {
+  //       pgm_->insert(key, (char *)value);
+  //       return 1;
+  //     }
+  //     int Get(uint64_t key, uint64_t &value)
+  //     {
+  //       auto it = pgm_->find(key);
+  //       value = (uint64_t)it->second;
+  //       return 1;
+  //     }
+  //     int Update(uint64_t key, uint64_t value)
+  //     {
+  //       pgm_->insert(key, (char *)value);
+  //       return 1;
+  //     }
 
-    int Delete(uint64_t key)
-    {
-      pgm_->erase(key);
-      return 1;
-    }
-    int Scan(uint64_t start_key, int len, std::vector<std::pair<uint64_t, uint64_t>> &results)
-    {
-      int scan_count = 0;
-      auto it = pgm_->find(start_key);
-      while (it != pgm_->end() && scan_count < len)
-      {
-        results.push_back({it->first, (uint64_t)it->second});
-        ++it;
-        scan_count++;
-      }
-      return 1;
-    }
-    void PrintStatic()
-    {
-      NVM::show_stat();
-    }
+  //     int Delete(uint64_t key)
+  //     {
+  //       pgm_->erase(key);
+  //       return 1;
+  //     }
+  //     int Scan(uint64_t start_key, int len, std::vector<std::pair<uint64_t, uint64_t>> &results)
+  //     {
+  //       int scan_count = 0;
+  //       auto it = pgm_->find(start_key);
+  //       while (it != pgm_->end() && scan_count < len)
+  //       {
+  //         results.push_back({it->first, (uint64_t)it->second});
+  //         ++it;
+  //         scan_count++;
+  //       }
+  //       return 1;
+  //     }
+  //     void PrintStatic()
+  //     {
+  //       NVM::show_stat();
+  //     }
 
-  private:
-    DynamicPGM *pgm_;
-  };
+  //   private:
+  //     DynamicPGM *pgm_;
+  //   };
 
   class LIPPDb : public ycsbc::KvDB
   {

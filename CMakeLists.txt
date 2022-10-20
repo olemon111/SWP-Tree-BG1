@@ -53,10 +53,10 @@ set(DEFAULT_SPAN 2)
 set(PMEMKV_THRESHOLD 10000)
 set(ENTRY_SIZE_FACTOR 1.2)
 
-configure_file(
-  "${PROJECT_SOURCE_DIR}/src/combotree_config.h.in"
-  "${PROJECT_SOURCE_DIR}/src/combotree_config.h"
-)
+# configure_file(
+#   "${PROJECT_SOURCE_DIR}/src/combotree_config.h.in"
+#   "${PROJECT_SOURCE_DIR}/src/combotree_config.h"
+# )
 
 # -march=native used to detect CPU flags and use corrosponding clflush instruction
 set(CMAKE_CXX_FLAGS "-march=native -Wall -Wno-reorder -O3")
@@ -83,21 +83,21 @@ include_directories(${MKL_INCLUDE_DIRECTORY})
 # combotree shared library
 include_directories(include)
 
-set(COMBO_TREE_SRC
-  src/alevel.cc
-  src/enviroment.cc
-  src/pgm_index.cc
-  src/rmi_index.cc
-  src/learn_index.cc
-  src/blevel.cc
-  src/bentry.cc
-  src/clevel.cc
-  src/combotree.cc
-  src/pmemkv.cc
-)
+# set(COMBO_TREE_SRC
+#   src/alevel.cc
+#   src/enviroment.cc
+#   src/pgm_index.cc
+#   src/rmi_index.cc
+#   src/learn_index.cc
+#   src/blevel.cc
+#   src/bentry.cc
+#   src/clevel.cc
+#   src/combotree.cc
+#   src/pmemkv.cc
+# )
 
-add_library(combotree SHARED ${COMBO_TREE_SRC})
-target_link_libraries(combotree pmem pmemobj mkl_rt pthread)
+# add_library(combotree SHARED ${COMBO_TREE_SRC})
+# target_link_libraries(combotree pmem pmemobj mkl_rt pthread)
 
 # # benchmark
 # add_executable(benchmark tests/benchmark.cc)
@@ -117,7 +117,7 @@ target_link_libraries(combotree pmem pmemobj mkl_rt pthread)
 
 # Unit Test
 enable_testing()
-include_directories(src)
+# include_directories(src)
 
 # # # generate_data
 # add_executable(generate_data tests/generate_data.cc)
@@ -177,7 +177,7 @@ include_directories(src)
 
 # # microbench_swp
 add_executable(microbench_swp tests/micro_bench_swp.cc)
-target_link_libraries(microbench_swp combotree)
+# target_link_libraries(microbench_swp combotree)
 add_test(microbench_swp microbench_swp)
 
 # # # ycsb
