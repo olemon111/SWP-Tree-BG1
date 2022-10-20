@@ -84,6 +84,8 @@ include_directories(${MKL_INCLUDE_DIRECTORY})
 # combotree shared library
 include_directories(include)
 
+list(APPEND libs_to_link pmemobj pmem tbb papi tcmalloc_minimal)
+
 # set(COMBO_TREE_SRC
 # src/alevel.cc
 # src/enviroment.cc
@@ -179,6 +181,8 @@ enable_testing()
 
 # # microbench_swp
 add_executable(microbench_swp tests/micro_bench_swp.cc)
+add_dependencies(microbench_swp PMDK)
+target_link_libraries(microbench_swp PRIVATE ${libs_to_link})
 
 # target_link_libraries(microbench_swp combotree)
 add_test(microbench_swp microbench_swp)
@@ -212,11 +216,12 @@ ExternalProject_Add(PMDK
 
 include_directories(${PMDK_PREFIX}/src/PMDK/src/include)
 
-if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-  link_directories(${PMDK_PREFIX}/src/PMDK/src/debug)
-else()
-  link_directories(${PMDK_PREFIX}/src/PMDK/src/nondebug)
-endif()
+# if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+# link_directories(${PMDK_PREFIX}/src/PMDK/src/debug)
+# else()
+link_directories(${PMDK_PREFIX}/src/PMDK/src/nondebug)
+
+# endif()
 
 # #################### Epoch Reclaim ####################
 FetchContent_Declare(
