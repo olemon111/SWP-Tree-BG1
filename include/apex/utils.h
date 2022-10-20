@@ -12,12 +12,13 @@
 #include <iostream>
 
 #define PMEM 1
-//enable linear probing design
+// enable linear probing design
 #define HASH 1
 
 static constexpr const uint32_t kCacheLineSize = 64;
 
-static bool FileExists(const char *pool_path) {
+static bool FileExists(const char *pool_path)
+{
   struct stat buffer;
   return (stat(pool_path, &buffer) == 0);
 }
@@ -25,9 +26,9 @@ static bool FileExists(const char *pool_path) {
 #ifdef PMEM
 #define CREATE_MODE_RW (S_IWUSR | S_IRUSR)
 
-//POBJ_LAYOUT_BEGIN(allocator);
-//POBJ_LAYOUT_TOID(allocator, char)
-//POBJ_LAYOUT_END(allocator)
+// POBJ_LAYOUT_BEGIN(allocator);
+// POBJ_LAYOUT_TOID(allocator, char)
+// POBJ_LAYOUT_END(allocator)
 
 #endif
 
@@ -49,7 +50,8 @@ static bool FileExists(const char *pool_path) {
 
 #define SIMD 1
 #define SIMD_CMP8(src, key)                                         \
-  do {                                                              \
+  do                                                                \
+  {                                                                 \
     const __m256i key_data = _mm256_set1_epi8(key);                 \
     __m256i seg_data =                                              \
         _mm256_loadu_si256(reinterpret_cast<const __m256i *>(src)); \
@@ -58,7 +60,8 @@ static bool FileExists(const char *pool_path) {
   } while (0)
 
 #define SSE_CMP8(src, key)                                       \
-  do {                                                           \
+  do                                                             \
+  {                                                              \
     const __m128i key_data = _mm_set1_epi8(key);                 \
     __m128i seg_data =                                           \
         _mm_loadu_si128(reinterpret_cast<const __m128i *>(src)); \
@@ -70,46 +73,50 @@ static bool FileExists(const char *pool_path) {
 
 #define LOG2(X) (32 - __builtin_clz((X)) - 1)
 
-#define CACHE_LINE_SIZE    64
+#define CACHE_LINE_SIZE 64
 
-inline void mfence(void) { asm volatile("mfence" ::: "memory"); }
+// inline void mfence(void) { asm volatile("mfence" ::: "memory"); }
 
-int msleep(uint64_t msec) {
+int msleep(uint64_t msec)
+{
   struct timespec ts;
   int res;
 
   ts.tv_sec = msec / 1000;
   ts.tv_nsec = (msec % 1000) * 1000000;
 
-  do {
+  do
+  {
     res = nanosleep(&ts, &ts);
   } while (res && errno == EINTR);
 
   return res;
 }
 
-template<class T>
-inline bool cas_multiple_type(T *src, T* old_src, T new_value){
-  uint64_t* uint_src = reinterpret_cast<uint64_t*>(src);
-  uint64_t* uint_old_src = reinterpret_cast<uint64_t*>(old_src);
-  uint64_t uint_new_value = *(reinterpret_cast<uint64_t*>(&new_value));
+template <class T>
+inline bool cas_multiple_type(T *src, T *old_src, T new_value)
+{
+  uint64_t *uint_src = reinterpret_cast<uint64_t *>(src);
+  uint64_t *uint_old_src = reinterpret_cast<uint64_t *>(old_src);
+  uint64_t uint_new_value = *(reinterpret_cast<uint64_t *>(&new_value));
   return CAS(uint_src, uint_old_src, uint_new_value);
 }
 
-template<class T>
-inline T load_multiple_type(T *src){
-  uint64_t* uint_src = reinterpret_cast<uint64_t*>(src);
+template <class T>
+inline T load_multiple_type(T *src)
+{
+  uint64_t *uint_src = reinterpret_cast<uint64_t *>(src);
   uint64_t value = __atomic_load_n(uint_src, __ATOMIC_ACQUIRE);
-  return *(reinterpret_cast<T*>(&value));
+  return *(reinterpret_cast<T *>(&value));
 }
 
 // obtain the starting address of a cache line
 #define GET_LINE(addr) \
-(((unsigned long long)(addr)) & (~(unsigned long long)(CACHE_LINE_SIZE-1)))
+  (((unsigned long long)(addr)) & (~(unsigned long long)(CACHE_LINE_SIZE - 1)))
 
 // check if address is aligned at line boundary
-#define  Isaligned_Atline(addr) \
-(!(((unsigned long long)(addr)) & (unsigned long long)(CACHE_LINE_SIZE-1)))
+#define Isaligned_Atline(addr) \
+  (!(((unsigned long long)(addr)) & (unsigned long long)(CACHE_LINE_SIZE - 1)))
 
 // Cacheline flush code, from shimin chen
 // use clwb and sfence
@@ -119,20 +126,23 @@ inline T load_multiple_type(T *src){
  *
  * @param addr   the address of the cache line
  */
-static inline
-void clwb(void * addr)
-{ asm volatile("clwb %0": :"m"(*((char *)addr))); } 
+static inline void clwb(void *addr)
+{
+  asm volatile("clwb %0"
+               :
+               : "m"(*((char *)addr)));
+}
 
 /**
  * flush [start, end]
  *
  * there are at most two lines.
  */
-static inline
-void clwb2(void *start, void *end)
+static inline void clwb2(void *start, void *end)
 {
   clwb(start);
-  if (GET_LINE(start) != GET_LINE(end)) {
+  if (GET_LINE(start) != GET_LINE(end))
+  {
     clwb(end);
   }
 }
@@ -142,12 +152,12 @@ void clwb2(void *start, void *end)
  *
  * there can be 1 to many lines
  */
-static inline
-void clwbmore(void *start, void *end)
-{ 
-  unsigned long long start_line= GET_LINE(start);
-  unsigned long long end_line= GET_LINE(end);
-  do {
+static inline void clwbmore(void *start, void *end)
+{
+  unsigned long long start_line = GET_LINE(start);
+  unsigned long long end_line = GET_LINE(end);
+  do
+  {
     clwb((char *)start_line);
     start_line += CACHE_LINE_SIZE;
   } while (start_line <= end_line);
@@ -156,6 +166,7 @@ void clwbmore(void *start, void *end)
 /**
  * call sfence
  */
-static inline
-void sfence(void)
-{ asm volatile("sfence"); }
+static inline void sfence(void)
+{
+  asm volatile("sfence");
+}
