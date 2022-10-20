@@ -99,76 +99,76 @@ set(COMBO_TREE_SRC
 add_library(combotree SHARED ${COMBO_TREE_SRC})
 target_link_libraries(combotree pmem pmemobj mkl_rt pthread)
 
-# benchmark
-add_executable(benchmark tests/benchmark.cc)
-target_link_libraries(benchmark combotree)
+# # benchmark
+# add_executable(benchmark tests/benchmark.cc)
+# target_link_libraries(benchmark combotree)
 
-# multi_benchmark
-add_executable(multi_benchmark tests/multi_benchmark.cc)
-target_link_libraries(multi_benchmark combotree)
+# # multi_benchmark
+# add_executable(multi_benchmark tests/multi_benchmark.cc)
+# target_link_libraries(multi_benchmark combotree)
 
-# multi_benchmark
-add_executable(multi_bench tests/multi_bench.cc)
-target_link_libraries(multi_bench combotree)
+# # multi_benchmark
+# add_executable(multi_bench tests/multi_bench.cc)
+# target_link_libraries(multi_bench combotree)
 
-# scalability_test
-add_executable(scalability_test tests/scalability_test.cc)
-target_link_libraries(scalability_test combotree)
+# # scalability_test
+# add_executable(scalability_test tests/scalability_test.cc)
+# target_link_libraries(scalability_test combotree)
 
 # Unit Test
 enable_testing()
 include_directories(src)
 
-# # generate_data
-add_executable(generate_data tests/generate_data.cc)
+# # # generate_data
+# add_executable(generate_data tests/generate_data.cc)
 
-# # sortbuffer_test
-add_executable(sortbuffer_test tests/sortbuffer_test.cc)
+# # # sortbuffer_test
+# add_executable(sortbuffer_test tests/sortbuffer_test.cc)
 
-# # clevel_test
-add_executable(clevel_test tests/clevel_test.cc src/clevel.cc)
-target_link_libraries(clevel_test pmem)
-add_test(clevel_test clevel_test)
+# # # clevel_test
+# add_executable(clevel_test tests/clevel_test.cc src/clevel.cc)
+# target_link_libraries(clevel_test pmem)
+# add_test(clevel_test clevel_test)
 
-# # combotree_test
-add_executable(combotree_test tests/combotree_test.cc)
-target_link_libraries(combotree_test combotree)
-add_test(combotree_test combotree_test)
+# # # combotree_test
+# add_executable(combotree_test tests/combotree_test.cc)
+# target_link_libraries(combotree_test combotree)
+# add_test(combotree_test combotree_test)
 
-# # multi_combotree_test
-add_executable(multi_combotree_test tests/multi_combotree_test.cc)
-target_link_libraries(multi_combotree_test combotree)
-add_test(multi_combotree_test multi_combotree_test)
+# # # multi_combotree_test
+# add_executable(multi_combotree_test tests/multi_combotree_test.cc)
+# target_link_libraries(multi_combotree_test combotree)
+# add_test(multi_combotree_test multi_combotree_test)
 
-# # pgm_index_test
-add_executable(pgm_index_test tests/pgm_index_test.cc)
-target_link_libraries(pgm_index_test combotree)
-add_test(pgm_index_test pgm_index_test)
+# # # pgm_index_test
+# add_executable(pgm_index_test tests/pgm_index_test.cc)
+# target_link_libraries(pgm_index_test combotree)
+# add_test(pgm_index_test pgm_index_test)
 
-# # pgm_index_test
-add_executable(xindex_test tests/xindex_test.cc)
-target_link_libraries(xindex_test combotree)
-add_test(xindex_test xindex_test)
+# # # pgm_index_test
+# add_executable(xindex_test tests/xindex_test.cc)
+# target_link_libraries(xindex_test combotree)
+# add_test(xindex_test xindex_test)
 
-# # learn_index_test
-add_executable(learn_index_test tests/learn_index_test.cc)
-target_link_libraries(learn_index_test combotree)
-add_test(learn_index_test learn_index_test)
+# # # learn_index_test
+# add_executable(learn_index_test tests/learn_index_test.cc)
+# target_link_libraries(learn_index_test combotree)
+# add_test(learn_index_test learn_index_test)
 
-# # alex_test
-add_executable(alex_test tests/alex_test.cc)
-target_link_libraries(alex_test combotree)
-add_test(alex_test alex_test)
+# # # alex_test
+# add_executable(alex_test tests/alex_test.cc)
+# target_link_libraries(alex_test combotree)
+# add_test(alex_test alex_test)
 
 # # bucket_test
 # add_executable(bucket_test tests/bucket_test.cc)
 # target_link_libraries(bucket_test combotree)
 # add_test(bucket_test bucket_test)
 
-# # nvm_test
-add_executable(nvm_test tests/nvm_test.cc)
-target_link_libraries(nvm_test pmem)
-add_test(nvm_test nvm_test)
+# # # nvm_test
+# add_executable(nvm_test tests/nvm_test.cc)
+# target_link_libraries(nvm_test pmem)
+# add_test(nvm_test nvm_test)
 
 # # # microbench
 # add_executable(microbench tests/micro_bench.cc)
@@ -180,14 +180,14 @@ add_executable(microbench_swp tests/micro_bench_swp.cc)
 target_link_libraries(microbench_swp combotree)
 add_test(microbench_swp microbench_swp)
 
-# # ycsb
-add_executable(ycsb tests/ycsb.cc)
-target_link_libraries(ycsb combotree)
-add_test(ycsb ycsb)
+# # # ycsb
+# add_executable(ycsb tests/ycsb.cc)
+# target_link_libraries(ycsb combotree)
+# add_test(ycsb ycsb)
 
-add_executable(ycsb-mem tests/ycsb-mem.cc)
-target_link_libraries(ycsb-mem combotree)
-add_test(ycsb-mem ycsb-mem)
+# add_executable(ycsb-mem tests/ycsb-mem.cc)
+# target_link_libraries(ycsb-mem combotree)
+# add_test(ycsb-mem ycsb-mem)
 
 # #################### Epoch Reclaim ####################
 FetchContent_Declare(

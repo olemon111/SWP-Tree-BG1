@@ -387,10 +387,10 @@ int main(int argc, char *argv[])
     {
         db = new XIndexDb();
     }
-    else if (dbName == "alex")
-    {
-        db = new AlexDB();
-    }
+    // else if (dbName == "alex")
+    // {
+    //     db = new AlexDB();
+    // }
     else if (dbName == "apex")
     {
         db = new ApexDB();

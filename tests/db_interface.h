@@ -20,12 +20,12 @@
 #include "learnindex/pgm_index_dynamic.hpp"
 #include "mem/xindex/xindex_impl.h"
 //#include "xindex/xindex_impl.h"
-#include "alex/alex.h"
+// #include "alex/alex.h"
 #else
 #include "learnindex/pgm_index_dynamic.hpp"
 #include "learnindex/rmi.h"
 #include "xindex/xindex_impl.h"
-#include "alex/alex.h"
+// #include "alex/alex.h"
 #endif
 
 #include "stx/btree_map.h"
@@ -617,89 +617,89 @@ namespace dbInter
     btree_t *btree_;
   };
 
-  class AlexDB : public ycsbc::KvDB
-  {
-    typedef uint64_t KEY_TYPE;
-    typedef uint64_t PAYLOAD_TYPE;
-#ifdef USE_MEM
-    using Alloc = std::allocator<std::pair<KEY_TYPE, PAYLOAD_TYPE>>;
-#else
-    using Alloc = NVM::allocator<std::pair<KEY_TYPE, PAYLOAD_TYPE>>;
-#endif
-    typedef alex::Alex<KEY_TYPE, PAYLOAD_TYPE, alex::AlexCompare, Alloc> alex_t;
+  //   class AlexDB : public ycsbc::KvDB
+  //   {
+  //     typedef uint64_t KEY_TYPE;
+  //     typedef uint64_t PAYLOAD_TYPE;
+  // #ifdef USE_MEM
+  //     using Alloc = std::allocator<std::pair<KEY_TYPE, PAYLOAD_TYPE>>;
+  // #else
+  //     using Alloc = NVM::allocator<std::pair<KEY_TYPE, PAYLOAD_TYPE>>;
+  // #endif
+  //     typedef alex::Alex<KEY_TYPE, PAYLOAD_TYPE, alex::AlexCompare, Alloc> alex_t;
 
-  public:
-    AlexDB() : alex_(nullptr) {}
-    AlexDB(alex_t *alex) : alex_(alex) {}
-    virtual ~AlexDB()
-    {
-      delete alex_;
-    }
+  //   public:
+  //     AlexDB() : alex_(nullptr) {}
+  //     AlexDB(alex_t *alex) : alex_(alex) {}
+  //     virtual ~AlexDB()
+  //     {
+  //       delete alex_;
+  //     }
 
-    void Init()
-    {
-      NVM::data_init();
-      alex_ = new alex_t();
-      NVM::pmem_size = 0;
-    }
+  //     void Init()
+  //     {
+  //       NVM::data_init();
+  //       alex_ = new alex_t();
+  //       NVM::pmem_size = 0;
+  //     }
 
-    void Bulk_load(const std::pair<uint64_t, uint64_t> data[], int size)
-    {
-      alex_->bulk_load(data, size);
-    }
+  //     void Bulk_load(const std::pair<uint64_t, uint64_t> data[], int size)
+  //     {
+  //       alex_->bulk_load(data, size);
+  //     }
 
-    void Info()
-    {
-      std::cout << "NVM WRITE : " << NVM::pmem_size << std::endl;
-      NVM::show_stat();
-      alex_->PrintInfo();
-    }
+  //     void Info()
+  //     {
+  //       std::cout << "NVM WRITE : " << NVM::pmem_size << std::endl;
+  //       NVM::show_stat();
+  //       alex_->PrintInfo();
+  //     }
 
-    int Put(uint64_t key, uint64_t value)
-    {
-      alex_->insert(key, value);
-      return 1;
-    }
-    int Get(uint64_t key, uint64_t &value)
-    {
-      value = *(alex_->get_payload(key));
-      // assert(value == key);
-      return 1;
-    }
-    int Update(uint64_t key, uint64_t value)
-    {
-      uint64_t *addrs = (alex_->get_payload(key));
-      *addrs = value;
-      NVM::Mem_persist(addrs, sizeof(uint64_t));
-      return 1;
-    }
-    int Delete(uint64_t key)
-    {
-      alex_->erase(key);
-      return 1;
-    }
-    int Scan(uint64_t start_key, int len, std::vector<std::pair<uint64_t, uint64_t>> &results)
-    {
-      auto it = alex_->lower_bound(start_key);
-      int num_entries = 0;
-      while (num_entries < len && it != alex_->end())
-      {
-        results.push_back({it.key(), it.payload()});
-        num_entries++;
-        it++;
-      }
-      return 1;
-    }
-    void PrintStatic()
-    {
-      // std::cerr << "Alevel average cost: " << Common::timers["ABLevel_times"].avg_latency() << std::endl;
-      // std::cerr << "Clevel average cost: " << Common::timers["CLevel_times"].avg_latency() << std::endl;
-      NVM::show_stat();
-    }
+  //     int Put(uint64_t key, uint64_t value)
+  //     {
+  //       alex_->insert(key, value);
+  //       return 1;
+  //     }
+  //     int Get(uint64_t key, uint64_t &value)
+  //     {
+  //       value = *(alex_->get_payload(key));
+  //       // assert(value == key);
+  //       return 1;
+  //     }
+  //     int Update(uint64_t key, uint64_t value)
+  //     {
+  //       uint64_t *addrs = (alex_->get_payload(key));
+  //       *addrs = value;
+  //       NVM::Mem_persist(addrs, sizeof(uint64_t));
+  //       return 1;
+  //     }
+  //     int Delete(uint64_t key)
+  //     {
+  //       alex_->erase(key);
+  //       return 1;
+  //     }
+  //     int Scan(uint64_t start_key, int len, std::vector<std::pair<uint64_t, uint64_t>> &results)
+  //     {
+  //       auto it = alex_->lower_bound(start_key);
+  //       int num_entries = 0;
+  //       while (num_entries < len && it != alex_->end())
+  //       {
+  //         results.push_back({it.key(), it.payload()});
+  //         num_entries++;
+  //         it++;
+  //       }
+  //       return 1;
+  //     }
+  //     void PrintStatic()
+  //     {
+  //       // std::cerr << "Alevel average cost: " << Common::timers["ABLevel_times"].avg_latency() << std::endl;
+  //       // std::cerr << "Clevel average cost: " << Common::timers["CLevel_times"].avg_latency() << std::endl;
+  //       NVM::show_stat();
+  //     }
 
-  private:
-    alex_t *alex_;
-  };
+  //   private:
+  //     alex_t *alex_;
+  //   };
 
   class ApexDB : public ycsbc::KvDB
   {
