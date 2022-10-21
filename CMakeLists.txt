@@ -54,10 +54,10 @@ set(DEFAULT_SPAN 2)
 set(PMEMKV_THRESHOLD 10000)
 set(ENTRY_SIZE_FACTOR 1.2)
 
-# configure_file(
-# "${PROJECT_SOURCE_DIR}/src/combotree_config.h.in"
-# "${PROJECT_SOURCE_DIR}/src/combotree_config.h"
-# )
+configure_file(
+  "${PROJECT_SOURCE_DIR}/src/combotree_config.h.in"
+  "${PROJECT_SOURCE_DIR}/src/combotree_config.h"
+)
 
 # -march=native used to detect CPU flags and use corrosponding clflush instruction
 set(CMAKE_CXX_FLAGS "-march=native -Wall -Wno-reorder -O3")
@@ -84,7 +84,7 @@ include_directories(${MKL_INCLUDE_DIRECTORY})
 # combotree shared library
 include_directories(include)
 
-list(APPEND libs_to_link pmemobj pmem tbb papi tcmalloc_minimal)
+list(APPEND libs_to_link pmemobj pmem tbb papi tcmalloc_minimal mkl_rt pthread)
 
 # set(COMBO_TREE_SRC
 # src/alevel.cc
