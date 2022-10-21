@@ -86,21 +86,21 @@ include_directories(include)
 
 list(APPEND libs_to_link pmemobj pmem tbb papi tcmalloc_minimal mkl_rt pthread)
 
-# set(COMBO_TREE_SRC
-# src/alevel.cc
-# src/enviroment.cc
-# src/pgm_index.cc
-# src/rmi_index.cc
-# src/learn_index.cc
-# src/blevel.cc
-# src/bentry.cc
-# src/clevel.cc
-# src/combotree.cc
-# src/pmemkv.cc
-# )
+set(COMBO_TREE_SRC
+  src/alevel.cc
+  src/enviroment.cc
+  src/pgm_index.cc
+  src/rmi_index.cc
+  src/learn_index.cc
+  src/blevel.cc
+  src/bentry.cc
+  src/clevel.cc
+  src/combotree.cc
+  src/pmemkv.cc
+)
 
-# add_library(combotree SHARED ${COMBO_TREE_SRC})
-# target_link_libraries(combotree pmem pmemobj mkl_rt pthread)
+add_library(combotree SHARED ${COMBO_TREE_SRC})
+target_link_libraries(combotree pmem pmemobj mkl_rt pthread)
 
 # # benchmark
 # add_executable(benchmark tests/benchmark.cc)
@@ -121,7 +121,7 @@ list(APPEND libs_to_link pmemobj pmem tbb papi tcmalloc_minimal mkl_rt pthread)
 # Unit Test
 enable_testing()
 
-# include_directories(src)
+include_directories(src)
 
 # # # generate_data
 # add_executable(generate_data tests/generate_data.cc)

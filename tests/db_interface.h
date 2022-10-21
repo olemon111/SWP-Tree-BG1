@@ -6,8 +6,8 @@
 #include <cstring>
 #include <future>
 #include "ycsb/ycsb-c.h"
-// #include "combotree/combotree.h"
-// #include "../src/combotree_config.h"
+#include "combotree/combotree.h"
+#include "../src/combotree_config.h"
 #include "fast-fair/btree.h"
 // #include "fast-fair/btree_old.h"
 #include "nvm_alloc.h"
@@ -33,7 +33,7 @@
 #include "random.h"
 // #include "lipp/lipp.h"
 
-// using combotree::ComboTree;
+using combotree::ComboTree;
 using FastFair::btree;
 using namespace std;
 
