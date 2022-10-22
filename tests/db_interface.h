@@ -764,7 +764,7 @@ namespace dbInter
     }
     int Scan(uint64_t start_key, int len, std::vector<std::pair<uint64_t, uint64_t>> &results)
     {
-      apex_->range_scan_by_size(start_key, len, results);
+      // apex_->range_scan_by_size(start_key, len, results);
       return 1;
     }
     void PrintStatic()
