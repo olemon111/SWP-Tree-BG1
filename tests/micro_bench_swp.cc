@@ -259,7 +259,7 @@ int main(int argc, char *argv[])
         {"dbname", required_argument, NULL, 0},    // 4
         {"workload", required_argument, NULL, 0},  // 5
         {"loadstype", required_argument, NULL, 0}, // 6
-        {"theta", required_argument, NULL, 0}      // 7
+        {"theta", required_argument, NULL, 0},     // 7
         {"help", no_argument, NULL, 'h'},          // 8
         {NULL, 0, NULL, 0}};
 
