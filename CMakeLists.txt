@@ -61,6 +61,7 @@ configure_file(
 
 # -march=native used to detect CPU flags and use corrosponding clflush instruction
 set(CMAKE_CXX_FLAGS "-march=native -Wall -Wno-reorder -O3")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mrtm -msse4.1 -mavx2")
 
 # Require C++17
 set(CMAKE_CXX_STANDARD_REQUIRED on)
