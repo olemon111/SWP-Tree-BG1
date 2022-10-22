@@ -181,7 +181,8 @@ include_directories(src)
 
 # # microbench_swp
 add_executable(microbench_swp tests/micro_bench_swp.cc)
-add_dependencies(microbench_swp PMDK)
+
+# add_dependencies(microbench_swp PMDK)
 target_link_libraries(microbench_swp PRIVATE ${libs_to_link})
 
 # target_link_libraries(microbench_swp combotree)
@@ -199,29 +200,29 @@ add_definitions(-DPMEM)
 add_definitions(-DPMDK)
 message(STATUS "Persistence support: PMDK")
 
-# #################### PMDK ####################
-set(PMDK_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/pmdk")
-ExternalProject_Add(PMDK
-  GIT_REPOSITORY git@github.com:XiangpengHao/pmdk.git
-  GIT_TAG addr-patch
-  BUILD_IN_SOURCE 1
-  BUILD_COMMAND $(MAKE) EXTRA_CFLAGS=-Wno-error
-  PREFIX ${PMDK_PREFIX}
-  CONFIGURE_COMMAND ""
-  INSTALL_COMMAND ""
-  LOG_DOWNLOAD ON
-  LOG_CONFIGURE ON
-  LOG_BUILD ON
-)
+# # #################### PMDK ####################
+# set(PMDK_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/pmdk")
+# ExternalProject_Add(PMDK
+# GIT_REPOSITORY git@github.com:XiangpengHao/pmdk.git
+# GIT_TAG addr-patch
+# BUILD_IN_SOURCE 1
+# BUILD_COMMAND $(MAKE) EXTRA_CFLAGS=-Wno-error
+# PREFIX ${PMDK_PREFIX}
+# CONFIGURE_COMMAND ""
+# INSTALL_COMMAND ""
+# LOG_DOWNLOAD ON
+# LOG_CONFIGURE ON
+# LOG_BUILD ON
+# )
 
-include_directories(${PMDK_PREFIX}/src/PMDK/src/include)
+# include_directories(${PMDK_PREFIX}/src/PMDK/src/include)
 
-# if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-# link_directories(${PMDK_PREFIX}/src/PMDK/src/debug)
-# else()
-link_directories(${PMDK_PREFIX}/src/PMDK/src/nondebug)
+# # if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+# # link_directories(${PMDK_PREFIX}/src/PMDK/src/debug)
+# # else()
+# link_directories(${PMDK_PREFIX}/src/PMDK/src/nondebug)
 
-# endif()
+# # endif()
 
 # #################### Epoch Reclaim ####################
 FetchContent_Declare(
