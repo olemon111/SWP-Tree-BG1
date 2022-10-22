@@ -17,6 +17,7 @@
 #include "timer.h"
 #include "util.h"
 #include "random.h"
+#include "nvm_alloc.h"
 
 using combotree::ComboTree;
 using combotree::Random;

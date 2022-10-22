@@ -97,6 +97,10 @@ set(COMBO_TREE_SRC
   src/clevel.cc
   src/combotree.cc
   src/pmemkv.cc
+  src/lbtree.cc
+  src/mempool.cc
+  src/nvm-common.cc
+  src/tree.cc
 )
 
 add_library(combotree SHARED ${COMBO_TREE_SRC})
@@ -183,9 +187,8 @@ include_directories(src)
 add_executable(microbench_swp tests/micro_bench_swp.cc)
 
 # add_dependencies(microbench_swp PMDK)
-target_link_libraries(microbench_swp PRIVATE ${libs_to_link})
-
-# target_link_libraries(microbench_swp combotree)
+# target_link_libraries(microbench_swp PRIVATE ${libs_to_link})
+target_link_libraries(microbench_swp combotree)
 add_test(microbench_swp microbench_swp)
 
 # # # ycsb

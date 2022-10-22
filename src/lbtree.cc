@@ -15,8 +15,7 @@
  * efficient solution for update consistency on NVM memory.  However, the node
  * size is limited to up to 128B.
  */
-
-#include "lbtree.h"
+#include "lbtree/lbtree.h"
 
 /* ----------------------------------------------------------------- *
  useful structure

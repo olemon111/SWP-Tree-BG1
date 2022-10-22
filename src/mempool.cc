@@ -17,8 +17,7 @@
  * The memory pool is divided into segments.  Each worker thread has its own 
  * segment of the memory pool to reduce contention.
  */
-
-#include "mempool.h"
+#include "lbtree/mempool.h"
 
 thread_local int worker_id= -1;  /* in Thread Local Storage */
 
