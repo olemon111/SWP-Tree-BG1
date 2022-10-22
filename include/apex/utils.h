@@ -128,7 +128,7 @@ inline T load_multiple_type(T *src)
  */
 static inline void apex_clwb(void *addr)
 {
-  asm volatile("apex_clwb %0"
+  asm volatile("clwb %0"
                :
                : "m"(*((char *)addr)));
 }
