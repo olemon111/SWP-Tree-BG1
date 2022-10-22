@@ -12,7 +12,7 @@
 #include <map>
 #include <algorithm>
 #include <string.h>
-
+#include <unordered_set>
 #include "db_interface.h"
 #include "timer.h"
 #include "util.h"
