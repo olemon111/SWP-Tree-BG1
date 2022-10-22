@@ -705,11 +705,12 @@ namespace dbInter
   {
     typedef uint64_t KEY_TYPE;
     typedef uint64_t PAYLOAD_TYPE;
-#ifdef USE_MEM
-    using Alloc = std::allocator<std::pair<KEY_TYPE, PAYLOAD_TYPE>>;
-#else
-    using Alloc = NVM::allocator<std::pair<KEY_TYPE, PAYLOAD_TYPE>>;
-#endif
+    using Alloc = my_alloc::allocator<std::pair<KEY_TYPE, PAYLOAD_TYPE>>;
+    // #ifdef USE_MEM
+    //     using Alloc = std::allocator<std::pair<KEY_TYPE, PAYLOAD_TYPE>>;
+    // #else
+    //     using Alloc = NVM::allocator<std::pair<KEY_TYPE, PAYLOAD_TYPE>>;
+    // #endif
     typedef alex::Apex<KEY_TYPE, PAYLOAD_TYPE, alex::AlexCompare, Alloc> apex_t;
 
   public:
