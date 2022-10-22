@@ -277,8 +277,8 @@ namespace alex
     inline void reset_rw_lock()
     {
       lock_ = 0;
-      clwb(&lock_);
-      sfence();
+      apex_clwb(&lock_);
+      apex_sfence();
     }
 
     inline void release_write_lock()
@@ -2958,11 +2958,11 @@ namespace alex
             // overflow_stash_type::New(&P_data_slots_, key, payload, invalid_key_, parameter_pos);
             new_overflow_stash = reinterpret_cast<overflow_stash_type *>(pmemobj_direct(P_data_slots_));
             new_overflow_stash->link_ = first_block_;
-            clwb(&(new_overflow_stash->link_));
-            sfence();
+            apex_clwb(&(new_overflow_stash->link_));
+            apex_sfence();
             first_block_ = new_overflow_stash;
-            clwb(&first_block_);
-            sfence();
+            apex_clwb(&first_block_);
+            apex_sfence();
           }
           else
           {
@@ -2989,11 +2989,11 @@ namespace alex
         overflow_stash_type::New(&P_data_slots_, key, payload, invalid_key_, parameter_pos);
         new_overflow_stash = reinterpret_cast<overflow_stash_type *>(pmemobj_direct(P_data_slots_));
         new_overflow_stash->link_ = first_block_;
-        clwb(&(new_overflow_stash->link_));
-        sfence();
+        apex_clwb(&(new_overflow_stash->link_));
+        apex_sfence();
         first_block_ = new_overflow_stash;
-        clwb(&first_block_);
-        sfence();
+        apex_clwb(&first_block_);
+        apex_sfence();
       }
       else
       {
@@ -3018,10 +3018,10 @@ namespace alex
       do
       {
         new_overflow_stash->link_ = old_value;
-        clwb(&(new_overflow_stash->link_));
+        apex_clwb(&(new_overflow_stash->link_));
       } while (!CAS(&first_block_, &old_value, new_overflow_stash));
-      clwb(&first_block_);
-      sfence();
+      apex_clwb(&first_block_);
+      apex_sfence();
     }
 
     inline V *insert_to_overflow_stash_with_sync(int parameter_pos, int *ret_offset, const T &key, const P &payload, OverflowDesc *desc)
@@ -3047,8 +3047,8 @@ namespace alex
             new_overflow_stash = reinterpret_cast<overflow_stash_type *>(pmemobj_direct(desc->new_node_));
             link_overflow_stash_with_sync(parameter_pos, new_overflow_stash);
             desc->cur_node_ = nullptr;
-            clwb(&desc->cur_node_);
-            sfence();
+            apex_clwb(&desc->cur_node_);
+            apex_sfence();
           }
           else
           {
@@ -3078,8 +3078,8 @@ namespace alex
         new_stash = reinterpret_cast<overflow_stash_type *>(pmemobj_direct(desc->new_node_));
         link_overflow_stash_with_sync(parameter_pos, new_stash);
         desc->cur_node_ = nullptr;
-        clwb(&desc->cur_node_);
-        sfence();
+        apex_clwb(&desc->cur_node_);
+        apex_sfence();
       }
       else
       {
@@ -3175,8 +3175,8 @@ namespace alex
         overflow_data = stash_slots_ + stash_pos;
       }
 
-      clwb(overflow_data);
-      sfence();
+      apex_clwb(overflow_data);
+      apex_sfence();
       // Insert the stash info to DRAM-stored OverflowFinger
       insert_overflowfp_to_meta(meta_pos, parameter_pos, overflow_data, fp, offset);
     }
@@ -4020,8 +4020,8 @@ namespace alex
     {
       data_slots_[pos].second = payload;
       data_slots_[pos].first = key;
-      clwb(&data_slots_[pos]);
-      sfence();
+      apex_clwb(&data_slots_[pos]);
+      apex_sfence();
     }
 
     // insert without any cacheline flush
@@ -4055,8 +4055,8 @@ namespace alex
         {
           ALEX_DATA_NODE_KEY_AT(i) = invalid_key_;
 #ifdef MY_PERSISTENCE
-          clwb(&(ALEX_DATA_NODE_KEY_AT(i)));
-          sfence();
+          apex_clwb(&(ALEX_DATA_NODE_KEY_AT(i)));
+          apex_sfence();
 #endif
           unset_fingerprint(i);
           scale_parameters_[parameter_pos].num_keys_--;
@@ -4079,8 +4079,8 @@ namespace alex
             {
               ret->first = invalid_key_;
 #ifdef MY_PERSISTENCE
-              clwb(&(ret->first));
-              sfence();
+              apex_clwb(&(ret->first));
+              apex_sfence();
 #endif
               overflow_array[i] = nullptr;
               scale_parameters_[parameter_pos].num_keys_--;
@@ -4137,8 +4137,8 @@ namespace alex
         {
           ALEX_DATA_NODE_KEY_AT(i) = invalid_key_;
 #ifdef MY_PERSISTENCE
-          clwb(&(ALEX_DATA_NODE_KEY_AT(i)));
-          sfence();
+          apex_clwb(&(ALEX_DATA_NODE_KEY_AT(i)));
+          apex_sfence();
 #endif
           unset_fingerprint(i);
           scale_parameters_[parameter_pos].num_keys_--;
@@ -4167,8 +4167,8 @@ namespace alex
               {
                 ret->first = invalid_key_;
 #ifdef MY_PERSISTENCE
-                clwb(&(ret->first));
-                sfence();
+                apex_clwb(&(ret->first));
+                apex_sfence();
 #endif
                 // Delete according to the offset
                 uint8_t offset = static_cast<uint8_t>(reinterpret_cast<uint64_t>(overflow_array[i]) >> 48);
@@ -4230,8 +4230,8 @@ namespace alex
             ALEX_DATA_NODE_KEY_AT(i) = invalid_key_;
             num_erased++;
 #ifdef MY_PERSISTENCE
-            clwb(&(ALEX_DATA_NODE_KEY_AT(i)));
-            sfence();
+            apex_clwb(&(ALEX_DATA_NODE_KEY_AT(i)));
+            apex_sfence();
 #endif
             unset_fingerprint(i);
             int parameter_pos = m / scale_factor_;
@@ -4257,8 +4257,8 @@ namespace alex
                   int m = predict_position(ret->first);
                   ret->first = invalid_key_;
 #ifdef MY_PERSISTENCE
-                  clwb(&(ret->first));
-                  sfence();
+                  apex_clwb(&(ret->first));
+                  apex_sfence();
 #endif
                   overflow_array[i] = nullptr;
                   int parameter_pos = m / scale_factor_;
@@ -4281,8 +4281,8 @@ namespace alex
             num_erased++;
             ALEX_DATA_NODE_KEY_AT(i) = invalid_key_;
 #ifdef MY_PERSISTENCE
-            clwb(&(ALEX_DATA_NODE_KEY_AT(i)));
-            sfence();
+            apex_clwb(&(ALEX_DATA_NODE_KEY_AT(i)));
+            apex_sfence();
 #endif
             unset_fingerprint(i);
             int parameter_pos = m / scale_factor_;
@@ -4307,8 +4307,8 @@ namespace alex
                   int m = predict_position(ret->first);
                   ret->first = invalid_key_;
 #ifdef MY_PERSISTENCE
-                  clwb(&(ret->first));
-                  sfence();
+                  apex_clwb(&(ret->first));
+                  apex_sfence();
 #endif
                   overflow_array[i] = nullptr;
                   int parameter_pos = m / scale_factor_;
@@ -4366,8 +4366,8 @@ namespace alex
         {
           ALEX_DATA_NODE_PAYLOAD_AT(i) = payload;
 #ifdef MY_PERSISTENCE
-          clwb(&(ALEX_DATA_NODE_PAYLOAD_AT(i)));
-          sfence();
+          apex_clwb(&(ALEX_DATA_NODE_PAYLOAD_AT(i)));
+          apex_sfence();
 #endif
           scale_parameters_[parameter_pos].num_search_cost_ += sizeof(V) * (i - predicted_pos) / 64.0;
           update_success = true;
@@ -4394,8 +4394,8 @@ namespace alex
               {
                 ret->second = payload;
 #ifdef MY_PERSISTENCE
-                clwb(&(ret->second));
-                sfence();
+                apex_clwb(&(ret->second));
+                apex_sfence();
 #endif
                 scale_parameters_[parameter_pos].num_search_cost_ += sizeof(V) * i / 64.0;
                 *num_updated = 1;

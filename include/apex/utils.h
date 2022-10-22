@@ -119,16 +119,16 @@ inline T load_multiple_type(T *src)
   (!(((unsigned long long)(addr)) & (unsigned long long)(CACHE_LINE_SIZE - 1)))
 
 // Cacheline flush code, from shimin chen
-// use clwb and sfence
+// use apex_clwb and sfence
 
 /**
  * flush a cache line
  *
  * @param addr   the address of the cache line
  */
-static inline void clwb(void *addr)
+static inline void apex_clwb(void *addr)
 {
-  asm volatile("clwb %0"
+  asm volatile("apex_clwb %0"
                :
                : "m"(*((char *)addr)));
 }
@@ -138,12 +138,12 @@ static inline void clwb(void *addr)
  *
  * there are at most two lines.
  */
-static inline void clwb2(void *start, void *end)
+static inline void apex_clwb2(void *start, void *end)
 {
-  clwb(start);
+  apex_clwb(start);
   if (GET_LINE(start) != GET_LINE(end))
   {
-    clwb(end);
+    apex_clwb(end);
   }
 }
 
@@ -152,13 +152,13 @@ static inline void clwb2(void *start, void *end)
  *
  * there can be 1 to many lines
  */
-static inline void clwbmore(void *start, void *end)
+static inline void apex_clwbmore(void *start, void *end)
 {
   unsigned long long start_line = GET_LINE(start);
   unsigned long long end_line = GET_LINE(end);
   do
   {
-    clwb((char *)start_line);
+    apex_clwb((char *)start_line);
     start_line += CACHE_LINE_SIZE;
   } while (start_line <= end_line);
 }
@@ -166,7 +166,7 @@ static inline void clwbmore(void *start, void *end)
 /**
  * call sfence
  */
-static inline void sfence(void)
+static inline void apex_sfence(void)
 {
   asm volatile("sfence");
 }
