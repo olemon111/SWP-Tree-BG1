@@ -746,14 +746,14 @@ namespace dbInter
     }
     int Get(uint64_t key, uint64_t &value)
     {
-      apex_->search(key, value);
+      apex_->search(key, &value);
       // assert(value == key);
       return 1;
     }
     int Update(uint64_t key, uint64_t value)
     {
       apex_->update(key, value);
-      NVM::Mem_persist(addrs, sizeof(uint64_t));
+      // NVM::Mem_persist(addrs, sizeof(uint64_t));
       return 1;
     }
     int Delete(uint64_t key)
@@ -763,7 +763,7 @@ namespace dbInter
     }
     int Scan(uint64_t start_key, int len, std::vector<std::pair<uint64_t, uint64_t>> &results)
     {
-      apex_->range_scan_by_size(key, len, results);
+      apex_->range_scan_by_size(start_key, len, results);
       return 1;
     }
     void PrintStatic()
