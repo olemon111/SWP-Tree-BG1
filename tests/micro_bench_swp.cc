@@ -238,7 +238,7 @@ void show_help(char *prog)
               << "    --load-size              LOAD_SIZE" << std::endl
               << "    --put-size               PUT_SIZE" << std::endl
               << "    --get-size               GET_SIZE" << std::endl
-              << "    --workload               WorkLoad" << std::endl
+              //   << "    --workload               WorkLoad" << std::endl
               << "    --help[-h]               show help" << std::endl;
 }
 
@@ -258,10 +258,10 @@ int main(int argc, char *argv[])
         {"put-size", required_argument, NULL, 0},  // 2
         {"get-size", required_argument, NULL, 0},  // 3
         {"dbname", required_argument, NULL, 0},    // 4
-        {"workload", required_argument, NULL, 0},  // 5
-        {"loadstype", required_argument, NULL, 0}, // 6
-        {"theta", required_argument, NULL, 0},     // 7
-        {"help", no_argument, NULL, 'h'},          // 8
+        // {"workload", required_argument, NULL, 0},  // 5
+        {"loadstype", required_argument, NULL, 0}, // 5
+        {"theta", required_argument, NULL, 0},     // 6
+        {"help", no_argument, NULL, 'h'},          // 7
         {NULL, 0, NULL, 0}};
 
     int c;
@@ -291,16 +291,16 @@ int main(int argc, char *argv[])
             case 4:
                 dbName = optarg;
                 break;
+            // case 5:
+            //     load_file = optarg;
+            //     break;
             case 5:
-                load_file = optarg;
-                break;
-            case 6:
                 Loads_type = atoi(optarg);
                 break;
-            case 7:
+            case 6:
                 theta = atof(optarg);
                 break;
-            case 8:
+            case 7:
                 show_help(argv[0]);
                 return 0;
             default:
@@ -327,36 +327,37 @@ int main(int argc, char *argv[])
     std::cout << "PUT_SIZE:              " << PUT_SIZE << std::endl;
     std::cout << "GET_SIZE:              " << GET_SIZE << std::endl;
     std::cout << "DB  name:              " << dbName << std::endl;
-    std::cout << "Workload:              " << load_file << std::endl;
+    std::cout << "Loads type:            " << Loads_type << std::endl;
+    // std::cout << "Workload:              " << load_file << std::endl;
     std::cout << "Theta:                 " << theta << std::endl;
 
     std::vector<uint64_t> data_base;
     switch (Loads_type)
     {
-    case -2:
-        data_base = read_data_from_osm<uint64_t>(load_file, get_longlat, "/home/lbl/dataset/generate_random_osm_longlat.dat"); // LLT
-        break;
-    case -1:
-        data_base = read_data_from_osm<uint64_t>(load_file, get_longtitude, "/home/lbl/dataset/generate_random_osm_longtitudes.dat"); // LTD
-        break;
+    // case -2:
+    //     data_base = read_data_from_osm<uint64_t>(load_file, get_longlat, "/home/lbl/dataset/generate_random_osm_longlat.dat"); // LLT
+    //     break;
+    // case -1:
+    //     data_base = read_data_from_osm<uint64_t>(load_file, get_longtitude, "/home/lbl/dataset/generate_random_osm_longtitudes.dat"); // LTD
+    //     break;
     case 0:
         data_base = generate_uniform_random(LOAD_SIZE + PUT_SIZE * 10);
         break;
     case 1:
         data_base = generate_random_ycsb(LOAD_SIZE + PUT_SIZE * 10);
         break;
-    case 2:
-        data_base = load_data_from_osm<uint64_t>("/home/lbl/dataset/generate_random_osm_longtitudes.dat");
-        break;
-    case 3:
-        data_base = load_data_from_osm<uint64_t>("/home/lbl/dataset/generate_random_osm_longlat.dat");
-        break;
+    // case 2:
+    // data_base = load_data_from_osm<uint64_t>("/home/lbl/dataset/generate_random_osm_longtitudes.dat");
+    // break;
+    // case 3:
+    // data_base = load_data_from_osm<uint64_t>("/home/lbl/dataset/generate_random_osm_longlat.dat");
+    // break;
     case 4:
         data_base = load_data_from_osm<uint64_t>("/home/lbl/dataset/generate_uniform_random.dat");
         break;
-    case 5:
-        data_base = load_data_from_osm<uint64_t>("/home/lbl/dataset/lognormal.dat");
-        break;
+    // case 5:
+    // data_base = load_data_from_osm<uint64_t>("/home/lbl/dataset/lognormal.dat");
+    // break;
     case 6:
         data_base = load_data_from_osm<uint64_t>("/home/lbl/dataset/generate_random_ycsb.dat");
         break;

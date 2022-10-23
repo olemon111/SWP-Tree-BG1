@@ -1,6 +1,5 @@
 #!/bin/bash
-BUILDDIR=$(dirname "$0")/../build/
-WorkLoad=""
+BUILDDIR=$(dirname "$0")/../build
 Loadname="ycsb-swp"
 function Run() {
     dbname=$1
@@ -14,16 +13,24 @@ function Run() {
 
     # microbench_swp
 
+    # # rm -f /mnt/AEP0/*
+    # Loadname="ycsb-read"
+    # date | tee microbench-swp-${dbname}-${Loadname}.txt
+    # LD_PRELOAD=libhugetlbfs.so HUGETLB_MORECORE=yes numactl --cpubind=0 --membind=0 ${BUILDDIR}/microbench_swp --dbname ${dbname} --load-size ${loadnum} \
+    # --put-size 0 --get-size ${opnum} --workload ${WorkLoad} \
+    # --loadstype 1 --theta ${theta} -t $thread | tee -a microbench-swp-${dbname}-${Loadname}.txt
+
+    # echo "${BUILDDIR}/microbench_swp --dbname ${dbname} --load-size ${loadnum} "\
+    # "--put-size ${0} --get-size ${opnum} --workload ${WorkLoad} --loadstype 1 --theta ${theta} -t $thread"
     # rm -f /mnt/AEP0/*
     Loadname="ycsb-read"
     date | tee microbench-swp-${dbname}-${Loadname}.txt
     LD_PRELOAD=libhugetlbfs.so HUGETLB_MORECORE=yes numactl --cpubind=0 --membind=0 ${BUILDDIR}/microbench_swp --dbname ${dbname} --load-size ${loadnum} \
-    --put-size 0 --get-size ${opnum} --workload ${WorkLoad} \
-    --loadstype 1 --theta ${theta} -t $thread | tee -a microbench-swp-${dbname}-${Loadname}.txt
+    --put-size 0 --get-size ${opnum} \
+    --loadstype 1 --theta ${theta} -t $thread | tee -a microbench-swp-${dbname}-${Loadname}-${theta}.txt
 
     echo "${BUILDDIR}/microbench_swp --dbname ${dbname} --load-size ${loadnum} "\
-    "--put-size ${0} --get-size ${opnum} --workload ${WorkLoad} --loadstype 1 --theta ${theta} -t $thread"
-
+    "--put-size ${0} --get-size ${opnum} --loadstype 1 --theta ${theta} -t $thread"
 }
 
 function run_all() {
