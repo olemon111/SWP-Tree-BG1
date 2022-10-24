@@ -62,42 +62,6 @@ size_t physical_memory_used_by_process()
     return result;
 }
 
-uint64_t get_cellid(const std::string &line)
-{
-    uint64_t id;
-    double lat, lon;
-    std::stringstream strin(line);
-    strin >> id >> lon >> lat;
-    return id;
-}
-
-uint64_t get_longtitude(const std::string &line)
-{
-    uint64_t id;
-    double lat, lon;
-    std::stringstream strin(line);
-    strin >> id >> lon >> lat;
-    return lon * 1e7;
-}
-
-double get_lat(const std::string &line)
-{
-    uint64_t id;
-    double lat, lon;
-    std::stringstream strin(line);
-    strin >> id >> lon >> lat;
-    return lat;
-}
-
-uint64_t get_longlat(const std::string &line)
-{
-    uint64_t id;
-    double lat, lon;
-    std::stringstream strin(line);
-    strin >> id >> lon >> lat;
-    return (lon * 180 + lat) * 1e7;
-}
-
 template <typename T>
 std::vector<T> read_data_from_osm(
     const std::string load_file,
@@ -108,45 +72,45 @@ std::vector<T> read_data_from_osm(
     std::vector<T> data;
     std::set<T> unique_keys;
     std::cout << "Use: " << __FUNCTION__ << std::endl;
-    const uint64_t ns = util::timing([&]
-                                     {
-                                     std::ifstream in(load_file);
-                                     if (!in.is_open())
-                                     {
-                                       std::cerr << "unable to open " << load_file << std::endl;
-                                       exit(EXIT_FAILURE);
-                                     }
-                                     uint64_t id, size = 0;
-                                     double lat, lon;
-                                     while (!in.eof())
-                                     {
-                                       /* code */
-                                       std::string tmp;
-                                       getline(in, tmp); // 去除第一行
-                                       while (getline(in, tmp))
-                                       {
-                                         T key = get_data(tmp);
-                                         unique_keys.insert(key);
-                                         size++;
-                                         if (size % 10000000 == 0)
-                                           std::cerr << "Load: " << size << "\r";
-                                       }
-                                     }
-                                     in.close();
-                                     std::cerr << "Finshed loads ......\n";
-                                     data.assign(unique_keys.begin(), unique_keys.end());
-                                     std::random_shuffle(data.begin(), data.end());
-                                     size = data.size();
-                                     std::cerr << "Finshed random ......\n";
-                                     std::ofstream out(output, std::ios::binary);
-                                     out.write(reinterpret_cast<char *>(&size), sizeof(uint64_t));
-                                     out.write(reinterpret_cast<char *>(data.data()), data.size() * sizeof(uint64_t));
-                                     out.close();
-                                     std::cout << "read size: " << size << ", unique data: " << unique_keys.size() << std::endl; });
+    const uint64_t ns = util::timing(
+        [&]
+        {
+            std::ifstream in(load_file);
+            if (!in.is_open())
+            {
+                std::cerr << "unable to open " << load_file << std::endl;
+                exit(EXIT_FAILURE);
+            }
+            uint64_t id, size = 0;
+            double lat, lon;
+            while (!in.eof())
+            {
+                /* code */
+                std::string tmp;
+                getline(in, tmp); // 去除第一行
+                while (getline(in, tmp))
+                {
+                    T key = get_data(tmp);
+                    unique_keys.insert(key);
+                    size++;
+                    if (size % 10000000 == 0)
+                        std::cerr << "Load: " << size << "\r";
+                }
+            }
+            in.close();
+            std::cerr << "Finshed loads ......\n";
+            data.assign(unique_keys.begin(), unique_keys.end());
+            std::random_shuffle(data.begin(), data.end());
+            size = data.size();
+            std::cerr << "Finshed random ......\n";
+            std::ofstream out(output, std::ios::binary);
+            out.write(reinterpret_cast<char *>(&size), sizeof(uint64_t));
+            out.write(reinterpret_cast<char *>(data.data()), data.size() * sizeof(uint64_t));
+            out.close();
+            std::cout << "read size: " << size << ", unique data: " << unique_keys.size() << std::endl;
+        });
     const uint64_t ms = ns / 1e6;
-    std::cout << "generate " << data.size() << " values in "
-              << ms << " ms (" << static_cast<double>(data.size()) / 1000 / ms
-              << " M values/s)" << std::endl;
+    std::cout << "generate " << data.size() << " values in " << ms << " ms (" << static_cast<double>(data.size()) / 1000 / ms << " M values/s)" << std::endl;
     return data;
 }
 
@@ -163,17 +127,21 @@ std::vector<uint64_t> generate_random_ycsb(size_t op_num)
     std::unordered_set<uint64_t> unique_keys;
     data.resize(op_num);
     std::cout << "Use: " << __FUNCTION__ << std::endl;
-    const uint64_t ns = util::timing([&]
-                                     {
-                                     Random rnd(0, UINT64_MAX);
-                                     int cnt = 0;
-                                     while (cnt < op_num) {
-                                      int data = rnd.Next();;
-                                      if (unique_keys.insert(data).second)
-                                        cnt++;
-                                      if (cnt % 10000000 == 0)
-                                           std::cerr << "generate: " << cnt << "\r";
-                                     } });
+    const uint64_t ns = util::timing(
+        [&]
+        {
+            Random rnd(0, UINT64_MAX);
+            int cnt = 0;
+            while (cnt < op_num)
+            {
+                int data = rnd.Next();
+                ;
+                if (unique_keys.insert(data).second)
+                    cnt++;
+                if (cnt % 10000000 == 0)
+                    std::cerr << "generate: " << cnt << "\r";
+            }
+        });
 
     const std::string output = "/home/lbl/dataset/generate_random_ycsb.dat";
     data.assign(unique_keys.begin(), unique_keys.end());
@@ -184,9 +152,12 @@ std::vector<uint64_t> generate_random_ycsb(size_t op_num)
     out.write(reinterpret_cast<char *>(data.data()), data.size() * sizeof(uint64_t));
     out.close();
     const uint64_t ms = ns / 1e6;
-    std::cout << "generate " << data.size() << " values in "
-              << ms << " ms (" << static_cast<double>(data.size()) / 1000 / ms
-              << " M values/s)" << std::endl;
+    std::cout << "generate " << data.size() << " values in " << ms << " ms (" << static_cast<double>(data.size()) / 1000 / ms << " M values/s)" << std::endl;
+    for (int i = 0; i < 20; i++)
+    {
+        std::cout << i << ": " << data[i] << endl;
+    }
+    std::cout << "------------------------------" << endl;
     return data;
 }
 
@@ -196,19 +167,24 @@ std::vector<uint64_t> generate_uniform_random(size_t op_num)
     std::set<uint64_t> unique_keys;
     data.resize(op_num);
     std::cout << "Use: " << __FUNCTION__ << std::endl;
-    const uint64_t ns = util::timing([&]
-                                     {
-                                     Random rnd(0, UINT64_MAX);
-                                     int cnt = 0;
-                                     while (cnt < op_num) {
-                                      int data = rnd.Next();;
-                                      if (unique_keys.count(data))
-                                        continue;
-                                      else {
-                                        unique_keys.insert(data);
-                                        cnt++;
-                                      }
-                                     } });
+    const uint64_t ns = util::timing(
+        [&]
+        {
+            Random rnd(0, UINT64_MAX);
+            int cnt = 0;
+            while (cnt < op_num)
+            {
+                int data = rnd.Next();
+                ;
+                if (unique_keys.count(data))
+                    continue;
+                else
+                {
+                    unique_keys.insert(data);
+                    cnt++;
+                }
+            }
+        });
 
     const std::string output = "/home/lbl/dataset/generate_uniform_random.dat";
     data.assign(unique_keys.begin(), unique_keys.end());
@@ -219,9 +195,7 @@ std::vector<uint64_t> generate_uniform_random(size_t op_num)
     out.write(reinterpret_cast<char *>(data.data()), data.size() * sizeof(uint64_t));
     out.close();
     const uint64_t ms = ns / 1e6;
-    std::cout << "generate " << data.size() << " values in "
-              << ms << " ms (" << static_cast<double>(data.size()) / 1000 / ms
-              << " M values/s)" << std::endl;
+    std::cout << "generate " << data.size() << " values in " << ms << " ms (" << static_cast<double>(data.size()) / 1000 / ms << " M values/s)" << std::endl;
     for (int i = 0; i < 20; i++)
     {
         std::cout << data[i] << endl;
@@ -334,37 +308,23 @@ int main(int argc, char *argv[])
     std::vector<uint64_t> data_base;
     switch (Loads_type)
     {
-    // case -2:
-    //     data_base = read_data_from_osm<uint64_t>(load_file, get_longlat, "/home/lbl/dataset/generate_random_osm_longlat.dat"); // LLT
-    //     break;
-    // case -1:
-    //     data_base = read_data_from_osm<uint64_t>(load_file, get_longtitude, "/home/lbl/dataset/generate_random_osm_longtitudes.dat"); // LTD
-    //     break;
     case 0:
-        data_base = generate_uniform_random(LOAD_SIZE + PUT_SIZE * 10);
+        data_base = generate_uniform_random(LOAD_SIZE);
         break;
     case 1:
-        data_base = generate_random_ycsb(LOAD_SIZE + PUT_SIZE * 10);
+        data_base = generate_random_ycsb(LOAD_SIZE);
         break;
-    // case 2:
-    // data_base = load_data_from_osm<uint64_t>("/home/lbl/dataset/generate_random_osm_longtitudes.dat");
-    // break;
-    // case 3:
-    // data_base = load_data_from_osm<uint64_t>("/home/lbl/dataset/generate_random_osm_longlat.dat");
-    // break;
-    case 4:
+    case 2:
         data_base = load_data_from_osm<uint64_t>("/home/lbl/dataset/generate_uniform_random.dat");
         break;
-    // case 5:
-    // data_base = load_data_from_osm<uint64_t>("/home/lbl/dataset/lognormal.dat");
-    // break;
-    case 6:
+    case 3:
         data_base = load_data_from_osm<uint64_t>("/home/lbl/dataset/generate_random_ycsb.dat");
         break;
     default:
-        data_base = generate_uniform_random(LOAD_SIZE + PUT_SIZE * 8);
+        data_base = generate_uniform_random(LOAD_SIZE);
         break;
     }
+
     size_t init_dram_space_use = physical_memory_used_by_process();
     std::cout << "before newdb, dram space use: " << init_dram_space_use / 1024.0 / 1024.0 << " GB" << std::endl;
 
@@ -504,7 +464,7 @@ int main(int argc, char *argv[])
     // util::FastRandom ranny(18);
     // // cout << "getchar" << endl;
     // // getchar();
-    // std::cout << "Start testing ...." << std::endl;
+    std::cout << "Start testing ...." << std::endl;
     // for (int i = 0; i < insert_ratios.size(); i++)
     // {
     //     int wrong_get = 0;
