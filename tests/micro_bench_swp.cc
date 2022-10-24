@@ -196,7 +196,7 @@ std::vector<uint64_t> generate_uniform_random(size_t op_num)
     out.close();
     const uint64_t ms = ns / 1e6;
     std::cout << "generate " << data.size() << " values in " << ms << " ms (" << static_cast<double>(data.size()) / 1000 / ms << " M values/s)" << std::endl;
-    for (int i = 0; i < 20; i++)
+    for (int i = 0; i < 10; i++)
     {
         std::cout << data[i] << endl;
     }
@@ -352,42 +352,7 @@ int main(int argc, char *argv[])
     Timer timer;
     uint64_t us_times;
     uint64_t load_pos = 0;
-    std::cout << "Start run ...." << std::endl;
-    {
-        // int init_size = 1e3;
-        // std::mt19937_64 gen_payload(std::random_device{}());
-        // auto values = new std::pair<uint64_t, uint64_t>[init_size];
-        // for (int i = 0; i < init_size; i++)
-        // {
-        //   values[i].first = data_base[i];
-        //   values[i].second = static_cast<uint64_t>(gen_payload());
-        // }
-        // std::sort(values, values + init_size,
-        //           [](auto const &a, auto const &b)
-        //           { return a.first < b.first; });
-        // db->Bulk_load(values, init_size);
-        // load_pos = init_size;
-    }
-
     int load_size = 0;
-
-    // if (dbName == "alex")
-    // {
-    //     load_size = LOAD_SIZE/40;
-    //     //for apex lognormal
-    //     std::cout << "Start loading ...." << std::endl;
-    //     auto values = new std::pair<uint64_t, uint64_t>[load_size];
-    //     for (int i = 0; i < load_size; i++)
-    //     {
-    //       values[i].first = data_base[i];
-    //       values[i].second = data_base[i] + 1;
-    //     }
-    //     std::sort(values, values + load_size,
-    //               [](auto const &a, auto const &b)
-    //               { return a.first < b.first; });
-    //     db->Bulk_load(values, load_size);
-    // }
-
     {
         // Load
         std::cout << "Start loading ...." << std::endl;
@@ -455,58 +420,35 @@ int main(int argc, char *argv[])
     }
     load_pos = LOAD_SIZE;
     db->Info();
-    // // us_times = timer.Microsecond("stop", "start");
-    // // timer.Record("start");
-    // // Different insert_ration
-    // // std::vector<float> insert_ratios = {0, 1.0};
-    // std::vector<float> insert_ratios = {0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0};
-    // float insert_ratio = 0;
-    // util::FastRandom ranny(18);
-    // // cout << "getchar" << endl;
-    // // getchar();
-    std::cout << "Start testing ...." << std::endl;
-    // for (int i = 0; i < insert_ratios.size(); i++)
-    // {
-    //     int wrong_get = 0;
-    //     uint64_t value = 0;
-    //     insert_ratio = insert_ratios[i];
-    //     db->Begin_trans();
-    //     std::cout << "Data loaded: " << load_pos << std::endl;
+    // Uniform Test
+    std::cout << "Start Testing Uniform Workload" << std::endl;
+    // generate random array
+    vector<uint32_t> rand_pos;
+    for (uint64_t i = 0; i < GET_SIZE; i++)
+    {
+        rand_pos.push_back(ranny.RandUint32(0, load_pos - 1));
+    }
 
-    //     // generate random array
-    //     vector<uint32_t> rand_pos;
-    //     for (uint64_t i = 0; i < GET_SIZE; i++)
-    //     {
-    //         rand_pos.push_back(ranny.RandUint32(0, load_pos - 1));
-    //     }
-    //     timer.Clear();
+    timer.Clear();
+    timer.Record("start");
 
-    //     timer.Record("start");
-    //     for (uint64_t i = 0; i < GET_SIZE; i++)
-    //     {
-    //         if (ranny.ScaleFactor() < insert_ratio)
-    //         {
-    //             db->Put(data_base[load_pos], (uint64_t)(data_base[load_pos] + 1));
-    //             load_pos++;
-    //         }
-    //         else
-    //         {
-    //             // uint64_t op_seq = ranny.RandUint32(0, load_pos - 1);
-    //             db->Get(data_base[rand_pos[i]], value);
-    //             if (value != data_base[rand_pos[i]] + 1)
-    //             {
-    //                 wrong_get++;
-    //             }
-    //         }
-    //     }
-    //     timer.Record("stop");
-    //     std::cout << "wrong get: " << wrong_get << std::endl;
-    //     us_times = timer.Microsecond("stop", "start");
-    //     std::cout << "[Metic-Operate]: Operate " << GET_SIZE << " insert_ratio " << insert_ratio << ": "
-    //               << "cost " << us_times / 1000000.0 << "s, "
-    //               << "iops " << (double)(GET_SIZE) / (double)us_times * 1000000.0 << " ." << std::endl;
-    // }
+    int wrong_get = 0;
+    uint64_t value = 0;
+    for (uint64_t i = 0; i < GET_SIZE; i++)
+    {
+        db->Get(data_base[rand_pos[i]], value);
+        if (value != data_base[rand_pos[i]] + 1)
+        {
+            wrong_get++;
+        }
+    }
 
+    timer.Record("stop");
+    std::cout << "wrong get: " << wrong_get << std::endl;
+    us_times = timer.Microsecond("stop", "start");
+    std::cout << "[Metic-Operate]: Operate " << GET_SIZE << " theta " << 0 << ": "
+              << "cost " << us_times / 1000000.0 << "s, "
+              << "iops " << (double)(GET_SIZE) / (double)us_times * 1000000.0 << " ." << std::endl;
     delete db;
 
     return 0;
