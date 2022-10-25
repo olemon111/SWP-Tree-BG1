@@ -348,7 +348,7 @@ int main(int argc, char *argv[])
     }
     // cout << "getchar" << endl;
     // getchar();
-
+    // NVM::env_init();
     db->Init();
     Timer timer;
     uint64_t us_times;

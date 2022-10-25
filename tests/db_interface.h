@@ -249,9 +249,9 @@ namespace dbInter
   //     void Init()
   //     {
   // #ifdef SERVER
-  //       tree_ = new ComboTree("/mnt/AEP0/", (1024 * 1024 * 1024 * 100UL), true);
+  //       tree_ = new ComboTree("/mnt/pmem0/", (1024 * 1024 * 1024 * 100UL), true);
   // #else
-  //       tree_ = new ComboTree("/mnt/AEP0/", (1024 * 1024 * 512UL), true);
+  //       tree_ = new ComboTree("/mnt/pmem0/", (1024 * 1024 * 512UL), true);
   // #endif
   //     }
 

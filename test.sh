@@ -3,7 +3,7 @@ mkdir -p build
 cd build
 rm -rf *
 cmake ..
-make -j4
+make -j16
 cd ..
 chmod +x ./tests/run_microbench_swp.sh
 sudo ./tests/run_microbench_swp.sh
