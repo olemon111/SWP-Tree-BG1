@@ -424,7 +424,7 @@ int main(int argc, char *argv[])
     // Uniform Test
     std::cout << "Start Testing Uniform Workload" << std::endl;
     // // generate random array
-    // util::FastRandom ranny(18);
+    util::FastRandom ranny(18);
     vector<uint32_t> rand_pos;
     std::mt19937_64 gen(std::random_device{}());
     std::uniform_int_distribution<uint32_t> dis(0, load_pos - 1);
