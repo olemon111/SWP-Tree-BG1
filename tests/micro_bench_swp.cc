@@ -18,6 +18,7 @@
 #include "util.h"
 #include "random.h"
 #include "nvm_alloc.h"
+#include "utils.h"
 
 using combotree::ComboTree;
 using combotree::Random;
@@ -422,8 +423,11 @@ int main(int argc, char *argv[])
     db->Info();
     // Uniform Test
     std::cout << "Start Testing Uniform Workload" << std::endl;
-    // generate random array
+    // // generate random array
+    // util::FastRandom ranny(18);
     vector<uint32_t> rand_pos;
+    std::mt19937_64 gen(std::random_device{}());
+    std::uniform_int_distribution<uint32_t> dis(0, load_pos - 1);
     for (uint64_t i = 0; i < GET_SIZE; i++)
     {
         rand_pos.push_back(ranny.RandUint32(0, load_pos - 1));
@@ -449,6 +453,50 @@ int main(int argc, char *argv[])
     std::cout << "[Metic-Operate]: Operate " << GET_SIZE << " theta " << 0 << ": "
               << "cost " << us_times / 1000000.0 << "s, "
               << "iops " << (double)(GET_SIZE) / (double)us_times * 1000000.0 << " ." << std::endl;
+    std::cout << "dram space use: " << (physical_memory_used_by_process() - init_dram_space_use) / 1024.0 / 1024.0 << " GB" << std::endl;
+
+    // sleep(10);
+    // // sleep(100);
+    // // Zipfian Test
+    // std::cout << "Start Testing Zipfian Workload" << std::endl;
+
+    // std::vector<float> thetas = {0.6, 0.7, 0.8, 0.9, 0.95, 0.99};
+    // float zipf_theta = 0.6;
+    // for (int k = 0; k < thetas.size(); k++)
+    // {
+    //     std::default_random_engine generator_;
+    //     zipfian_int_distribution<int> dis(0, load_pos - 1, thetas[i]);
+    //     rand_pos.clear();
+    //     for (uint64_t i = 0; i < GET_SIZE; i++)
+    //     {
+    //         uint32_t pos = dis(gen);
+    //         rand_pos.push_back(pos);
+    //     }
+    //     std::random_shuffle(rand_pos.begin(), rand_pos.end());
+
+    //     timer.Clear();
+    //     timer.Record("start");
+
+    //     wrong_get = 0;
+    //     value = 0;
+    //     for (uint64_t i = 0; i < GET_SIZE; i++)
+    //     {
+    //         db->Get(data_base[rand_pos[i]], value);
+    //         if (value != data_base[rand_pos[i]] + 1)
+    //         {
+    //             wrong_get++;
+    //         }
+    //     }
+
+    //     timer.Record("stop");
+    //     std::cout << "wrong get: " << wrong_get << std::endl;
+    //     us_times = timer.Microsecond("stop", "start");
+    //     std::cout << "[Metic-Operate]: Operate " << GET_SIZE << " theta " << thetas[k] << ": "
+    //               << "cost " << us_times / 1000000.0 << "s, "
+    //               << "iops " << (double)(GET_SIZE) / (double)us_times * 1000000.0 << " ." << std::endl;
+    //     std::cout << "dram space use: " << (physical_memory_used_by_process() - init_dram_space_use) / 1024.0 / 1024.0 << " GB" << std::endl;
+    // }
+
     delete db;
 
     return 0;

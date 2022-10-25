@@ -30,7 +30,7 @@ function Run() {
     --loadstype 1 --theta ${theta} -t $thread | tee -a microbench-swp-${dbname}-${Loadname}.txt
 
     echo "${BUILDDIR}/microbench_swp --dbname ${dbname} --load-size ${loadnum} "\
-    "--put-size ${0} --get-size ${opnum} --loadstype 1 --theta ${theta} -t $thread"
+    "--put-size 0 --get-size ${opnum} --loadstype 1 --theta ${theta} -t $thread"
 }
 
 function run_all() {
