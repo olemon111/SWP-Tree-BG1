@@ -25,7 +25,7 @@ function Run() {
     # rm -f /mnt/AEP0/*
     Loadname="ycsb-read"
     date | tee microbench-swp-${dbname}-${Loadname}.txt
-    LD_PRELOAD=libhugetlbfs.so HUGETLB_MORECORE=yes numactl --cpubind=0 --membind=0 ${BUILDDIR}/microbench_swp --dbname ${dbname} --load-size ${loadnum} \
+    ${BUILDDIR}/microbench_swp --dbname ${dbname} --load-size ${loadnum} \
     --put-size 0 --get-size ${opnum} \
     --loadstype 1 --theta ${theta} -t $thread | tee -a microbench-swp-${dbname}-${Loadname}.txt
 
