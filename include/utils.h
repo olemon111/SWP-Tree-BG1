@@ -6,7 +6,7 @@
 
 #include "zipf.h"
 #include "general_zipf.h"
-#include "../apex/uniform.h"
+#include "apex/uniform.h"
 #include <iostream>
 #include <fstream>
 #include <algorithm>

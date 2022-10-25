@@ -122,7 +122,9 @@ namespace dbInter
     void Init()
     {
       NVM::data_init();
+      std::cout << "before init btree" << std::endl;
       tree_ = new btree();
+      std::cout << "init db" << std::endl;
       NVM::pmem_size = 0;
     }
 
