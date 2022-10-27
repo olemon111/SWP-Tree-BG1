@@ -25,6 +25,7 @@ using combotree::Random;
 using combotree::Timer;
 using ycsbc::KvDB;
 using namespace dbInter;
+using namespace std;
 
 struct operation
 {
@@ -154,7 +155,7 @@ std::vector<uint64_t> generate_random_ycsb(size_t op_num)
     out.close();
     const uint64_t ms = ns / 1e6;
     std::cout << "generate " << data.size() << " values in " << ms << " ms (" << static_cast<double>(data.size()) / 1000 / ms << " M values/s)" << std::endl;
-    for (int i = 0; i < 20; i++)
+    for (int i = 0; i < 10; i++)
     {
         std::cout << i << ": " << data[i] << endl;
     }
@@ -359,57 +360,10 @@ int main(int argc, char *argv[])
         std::cout << "Start loading ...." << std::endl;
         util::FastRandom ranny(18);
         timer.Record("start");
-        int ops = 0;
         for (load_pos = load_size; load_pos < LOAD_SIZE; load_pos++)
         {
+            cout << load_pos << ": " << data_base[load_pos] << endl;
             db->Put(data_base[load_pos], (uint64_t)(data_base[load_pos] + 1));
-            ops++;
-            if (ops % 10000000 == 0)
-            {
-                ops = 0;
-                timer.Record("stop");
-                us_times = timer.Microsecond("stop", "start");
-                std::cout << "Operate: " << load_pos + 1 << std::endl;
-                std::cout << "dram space use: " << (physical_memory_used_by_process() - init_dram_space_use) / 1024.0 / 1024.0 << " GB" << std::endl;
-                // std::cout << "dram space use: " << combotree::dram_space / 1024.0 / 1024.0 / 1024.0 << " GB" << std::endl;
-                // 用于统计load过程中的nvm size和nvm write
-                db->Info();
-                std::cout << "write ampli: " << NVM::pmem_size * 1.0 / load_pos / 16.0 / 4.0 << std::endl;
-                // 扩展性读写测试
-                std::cout << "[Metic-write]: " << LOAD_SIZE << ": "
-                          << "cost " << us_times / 1000000.0 << "s, "
-                          << "iops " << (double)(10000000) / (double)us_times * 1000000.0 << " ." << std::endl;
-
-                // generate random array
-                vector<uint32_t> rand_pos;
-                int read_size = 2000000;
-                for (uint64_t i = 0; i < read_size; i++)
-                {
-                    rand_pos.push_back(ranny.RandUint32(0, load_pos - 1));
-                }
-                timer.Clear();
-                timer.Record("start");
-                uint64_t value = 0;
-                int wrong_get = 0;
-                for (uint64_t i = 0; i < read_size; i++)
-                {
-                    // uint64_t op_seq = ranny.RandUint32(0, load_pos - 1);
-                    db->Get(data_base[rand_pos[i]], value);
-                    if (value != data_base[rand_pos[i]] + 1)
-                    {
-                        wrong_get++;
-                    }
-                }
-                timer.Record("stop");
-                us_times = timer.Microsecond("stop", "start");
-                std::cout << "wrong get: " << wrong_get << endl;
-                std::cout << "[Metic-read]: " << LOAD_SIZE << ": "
-                          << "cost " << us_times / 1000000.0 << "s, "
-                          << "iops " << (double)(read_size) / (double)us_times * 1000000.0 << " ." << std::endl;
-
-                timer.Clear();
-                timer.Record("start");
-            }
         }
         std::cerr << std::endl;
 
@@ -455,7 +409,7 @@ int main(int argc, char *argv[])
               << "iops " << (double)(GET_SIZE) / (double)us_times * 1000000.0 << " ." << std::endl;
     std::cout << "dram space use: " << (physical_memory_used_by_process() - init_dram_space_use) / 1024.0 / 1024.0 << " GB" << std::endl;
 
-    sleep(10);
+    // sleep(10);
     // sleep(100);
     // Zipfian Test
     std::cout << "Start Testing Zipfian Workload" << std::endl;
@@ -491,13 +445,11 @@ int main(int argc, char *argv[])
         timer.Record("stop");
         std::cout << "wrong get: " << wrong_get << std::endl;
         us_times = timer.Microsecond("stop", "start");
-        std::cout << "[Metic-Operate]: Operate " << GET_SIZE << " theta: " << thetas[k]
+        std::cout << "[Metic-Operate]: Operate " << GET_SIZE << " theta: " << thetas[k] << ", "
                   << "cost " << us_times / 1000000.0 << "s, "
                   << "iops " << (double)(GET_SIZE) / (double)us_times * 1000000.0 << " ." << std::endl;
         std::cout << "dram space use: " << (physical_memory_used_by_process() - init_dram_space_use) / 1024.0 / 1024.0 << " GB" << std::endl;
     }
-
-    delete db;
 
     return 0;
 }

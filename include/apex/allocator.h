@@ -21,7 +21,7 @@
 
 static const char *layout_name = "template_pool";
 // static const uint64_t pool_addr = 0x5f0000000000;
-static const char *pool_name = "/mnt/pmem0/baotong/template.data";
+static const char *pool_name = "/mnt/pmem1/lbl/apex-pool.obj";
 // static const char *pool_name = "/mnt/pmem0/template.data";
 static const uint64_t pool_size = 40UL * 1024 * 1024 * 1024;
 

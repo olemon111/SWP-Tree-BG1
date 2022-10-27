@@ -1,0 +1,62 @@
+2022年 10月 27日 星期四 14:12:40 CST
+THREAD NUMBER:         1
+LOAD_SIZE:             10
+PUT_SIZE:              0
+GET_SIZE:              10
+DB  name:              apex
+Loads type:            1
+Theta:                 0.99
+Use: generate_random_ycsb
+generate 10 values in 0 ms (inf M values/s)
+0: 18446744072617730494
+1: 1896388378
+2: 1178214523
+3: 321942582
+4: 18446744072798696555
+5: 18446744071951665363
+6: 18446744071611660111
+7: 2068982092
+8: 18446744073689764214
+9: 18446744072796661595
+------------------------------
+before newdb, dram space use: 0.00497437 GB
+creating a new pool
+pool opened at: 0x7f3600000000
+unrecover
+Intial allocator: 1
+init apex db
+Start loading ....
+0: 18446744072617730494
+1: 1896388378
+2: 1178214523
+3: 321942582
+4: 18446744072798696555
+5: 18446744071951665363
+6: 18446744071611660111
+7: 2068982092
+8: 18446744073689764214
+9: 18446744072796661595
+[Metic-Load]: Load 10: cost 0.000166s, iops 60241 .
+Start Testing Uniform Workload
+wrong get: 0
+[Metic-Operate]: Operate 10 theta 0: cost 1e-06s, iops 1e+07 .
+dram space use: 0.0457153 GB
+Start Testing Zipfian Workload
+wrong get: 0
+[Metic-Operate]: Operate 10 theta: 0.6, cost 0s, iops inf .
+dram space use: 0.0457153 GB
+wrong get: 0
+[Metic-Operate]: Operate 10 theta: 0.7, cost 0s, iops inf .
+dram space use: 0.0457153 GB
+wrong get: 0
+[Metic-Operate]: Operate 10 theta: 0.8, cost 0s, iops inf .
+dram space use: 0.0457153 GB
+wrong get: 0
+[Metic-Operate]: Operate 10 theta: 0.9, cost 0s, iops inf .
+dram space use: 0.0457153 GB
+wrong get: 0
+[Metic-Operate]: Operate 10 theta: 0.95, cost 0s, iops inf .
+dram space use: 0.0457153 GB
+wrong get: 0
+[Metic-Operate]: Operate 10 theta: 0.99, cost 0s, iops inf .
+dram space use: 0.0457153 GB
