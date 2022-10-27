@@ -88,14 +88,14 @@ std::vector<T> read_data_from_osm(
 {
     std::vector<T> data;
     std::set<T> unique_keys;
-    std::cout << "Use: " << __FUNCTION__ << std::endl;
+    cout << "Use: " << __FUNCTION__ << endl;
     const uint64_t ns = util::timing(
         [&]
         {
             std::ifstream in(load_file);
             if (!in.is_open())
             {
-                std::cerr << "unable to open " << load_file << std::endl;
+                std::cerr << "unable to open " << load_file << endl;
                 exit(EXIT_FAILURE);
             }
             uint64_t id, size = 0;
@@ -124,10 +124,10 @@ std::vector<T> read_data_from_osm(
             out.write(reinterpret_cast<char *>(&size), sizeof(uint64_t));
             out.write(reinterpret_cast<char *>(data.data()), data.size() * sizeof(uint64_t));
             out.close();
-            std::cout << "read size: " << size << ", unique data: " << unique_keys.size() << std::endl;
+            cout << "read size: " << size << ", unique data: " << unique_keys.size() << endl;
         });
     const uint64_t ms = ns / 1e6;
-    std::cout << "generate " << data.size() << " values in " << ms << " ms (" << static_cast<double>(data.size()) / 1000 / ms << " M values/s)" << std::endl;
+    cout << "generate " << data.size() << " values in " << ms << " ms (" << static_cast<double>(data.size()) / 1000 / ms << " M values/s)" << endl;
     return data;
 }
 
@@ -143,7 +143,7 @@ std::vector<uint64_t> generate_random_ycsb(size_t op_num)
     std::vector<uint64_t> data;
     std::unordered_set<uint64_t> unique_keys;
     data.resize(op_num);
-    std::cout << "Use: " << __FUNCTION__ << std::endl;
+    cout << "Use: " << __FUNCTION__ << endl;
     const uint64_t ns = util::timing(
         [&]
         {
@@ -169,12 +169,12 @@ std::vector<uint64_t> generate_random_ycsb(size_t op_num)
     out.write(reinterpret_cast<char *>(data.data()), data.size() * sizeof(uint64_t));
     out.close();
     const uint64_t ms = ns / 1e6;
-    std::cout << "generate " << data.size() << " values in " << ms << " ms (" << static_cast<double>(data.size()) / 1000 / ms << " M values/s)" << std::endl;
+    cout << "generate " << data.size() << " values in " << ms << " ms (" << static_cast<double>(data.size()) / 1000 / ms << " M values/s)" << endl;
     for (int i = 0; i < 10; i++)
     {
-        std::cout << i << ": " << data[i] << endl;
+        cout << i << ": " << data[i] << endl;
     }
-    std::cout << "------------------------------" << endl;
+    cout << "------------------------------" << endl;
     return data;
 }
 
@@ -183,7 +183,7 @@ std::vector<uint64_t> generate_uniform_random(size_t op_num)
     std::vector<uint64_t> data;
     std::set<uint64_t> unique_keys;
     data.resize(op_num);
-    std::cout << "Use: " << __FUNCTION__ << std::endl;
+    cout << "Use: " << __FUNCTION__ << endl;
     const uint64_t ns = util::timing(
         [&]
         {
@@ -212,30 +212,30 @@ std::vector<uint64_t> generate_uniform_random(size_t op_num)
     out.write(reinterpret_cast<char *>(data.data()), data.size() * sizeof(uint64_t));
     out.close();
     const uint64_t ms = ns / 1e6;
-    std::cout << "generate " << data.size() << " values in " << ms << " ms (" << static_cast<double>(data.size()) / 1000 / ms << " M values/s)" << std::endl;
+    cout << "generate " << data.size() << " values in " << ms << " ms (" << static_cast<double>(data.size()) / 1000 / ms << " M values/s)" << endl;
     for (int i = 0; i < 10; i++)
     {
-        std::cout << data[i] << endl;
+        cout << data[i] << endl;
     }
     return data;
 }
 
 void show_help(char *prog)
 {
-    std::cout << "Usage: " << prog << " [options]" << std::endl
-              << std::endl
-              << "  Option:" << std::endl
-              << "    --thread[-t]             thread number" << std::endl
-              << "    --load-size              LOAD_SIZE" << std::endl
-              << "    --put-size               PUT_SIZE" << std::endl
-              << "    --get-size               GET_SIZE" << std::endl
-              //   << "    --workload               WorkLoad" << std::endl
-              << "    --help[-h]               show help" << std::endl;
+    cout << "Usage: " << prog << " [options]" << endl
+         << endl
+         << "  Option:" << endl
+         << "    --thread[-t]             thread number" << endl
+         << "    --load-size              LOAD_SIZE" << endl
+         << "    --put-size               PUT_SIZE" << endl
+         << "    --get-size               GET_SIZE" << endl
+         //   << "    --workload               WorkLoad" << endl
+         << "    --help[-h]               show help" << endl;
 }
 
 void load()
 {
-    std::cout << "Start loading ...." << std::endl;
+    cout << "Start loading ...." << endl;
     timer.Record("start");
 
     auto values = new std::pair<uint64_t, uint64_t>[LOAD_SIZE];
@@ -248,16 +248,17 @@ void load()
          [](auto const &a, auto const &b)
          { return a.first < b.first; });
     db->Bulk_load(values, int(LOAD_SIZE));
-    std::cerr << std::endl;
+    std::cerr << endl;
 
     timer.Record("stop");
     us_times = timer.Microsecond("stop", "start");
-    std::cout << "[Metic-Load]: Load " << LOAD_SIZE << ": "
-              << "cost " << us_times / 1000000.0 << "s, "
-              << "iops " << (double)(LOAD_SIZE) / (double)us_times * 1000000.0 << " ." << std::endl;
+    cout << "[Metic-Load]: Load " << LOAD_SIZE << ": "
+         << "cost " << us_times / 1000000.0 << "s, "
+         << "iops " << (double)(LOAD_SIZE) / (double)us_times * 1000000.0 << " ." << endl;
+    load_pos = LOAD_SIZE;
     // {
     //     // Load
-    //     std::cout << "Start loading ...." << std::endl;
+    //     cout << "Start loading ...." << endl;
     //     util::FastRandom ranny(18);
     //     timer.Record("start");
     //     for (load_pos = load_size; load_pos < LOAD_SIZE; load_pos++)
@@ -265,29 +266,29 @@ void load()
     //         cout << load_pos << ": " << data_base[load_pos] << endl;
     //         db->Put(data_base[load_pos], (uint64_t)(data_base[load_pos] + 1));
     //     }
-    //     std::cerr << std::endl;
+    //     std::cerr << endl;
 
     //     timer.Record("stop");
     //     us_times = timer.Microsecond("stop", "start");
-    //     std::cout << "[Metic-Load]: Load " << LOAD_SIZE << ": "
+    //     cout << "[Metic-Load]: Load " << LOAD_SIZE << ": "
     //               << "cost " << us_times / 1000000.0 << "s, "
-    //               << "iops " << (double)(LOAD_SIZE) / (double)us_times * 1000000.0 << " ." << std::endl;
+    //               << "iops " << (double)(LOAD_SIZE) / (double)us_times * 1000000.0 << " ." << endl;
     // }
 }
 
 void test_uniform()
 {
     // sleep(60);
-    std::cout << "Start Testing Uniform Workload" << std::endl;
+    cout << "Start Testing Uniform Workload" << endl;
     util::FastRandom ranny(18);
     vector<uint32_t> rand_pos;
     std::mt19937_64 gen(std::random_device{}());
     std::uniform_int_distribution<uint32_t> dis(0, load_pos - 1);
-    for (uint64_t i = 0; i < GET_SIZE; i++)
+    size_t tot = GET_SIZE + PUT_SIZE;
+    for (uint64_t i = 0; i < tot; i++)
     {
         rand_pos.push_back(ranny.RandUint32(0, load_pos - 1));
     }
-
     timer.Clear();
     timer.Record("start");
 
@@ -301,33 +302,37 @@ void test_uniform()
             wrong_get++;
         }
     }
+    for (uint64_t i = 0; i < PUT_SIZE; i++)
+    {
+        db->Put(data_base[rand_pos[i]], ranny.RandUint32(0, INT32_MAX));
+    }
 
     timer.Record("stop");
-    std::cout << "wrong get: " << wrong_get << std::endl;
+    cout << "wrong get: " << wrong_get << endl;
     us_times = timer.Microsecond("stop", "start");
-    std::cout << "[Metic-Operate]: Operate " << GET_SIZE << " theta " << 0 << ": "
-              << "cost " << us_times / 1000000.0 << "s, "
-              << "iops " << (double)(GET_SIZE) / (double)us_times * 1000000.0 << " ." << std::endl;
-    std::cout << "dram space use: " << (physical_memory_used_by_process() - init_dram_space_use) / 1024.0 / 1024.0 << " GB" << std::endl;
+    cout << "[Metic-Operate]: Operate " << tot << " theta " << 0 << ": "
+         << "cost " << us_times / 1000000.0 << "s, "
+         << "iops " << (double)(tot) / (double)us_times * 1000000.0 << " ." << endl;
+    cout << "dram space use: " << (physical_memory_used_by_process() - init_dram_space_use) / 1024.0 / 1024.0 << " GB" << endl;
 }
 
 void test_all_zipfian()
 {
+    cout << "Start Testing Zipfian Workload" << endl;
     util::FastRandom ranny(18);
     vector<uint32_t> rand_pos;
-    std::cout << "Start Testing Zipfian Workload" << std::endl;
-
+    size_t tot = GET_SIZE + PUT_SIZE;
     std::vector<float> thetas = {0.6, 0.7, 0.8, 0.9, 0.95, 0.99};
     float zipf_theta = 0.6;
     for (int k = 0; k < thetas.size(); k++)
     {
         // sleep(60);
-        std::default_random_engine generator_;
+        std::default_random_engine gen;
         zipfian_int_distribution<int> dis(0, load_pos - 1, thetas[k]);
         rand_pos.clear();
-        for (uint64_t i = 0; i < GET_SIZE; i++)
+        for (uint64_t i = 0; i < tot; i++)
         {
-            uint32_t pos = dis(generator_);
+            uint32_t pos = dis(gen);
             rand_pos.push_back(pos);
         }
         std::random_shuffle(rand_pos.begin(), rand_pos.end());
@@ -345,14 +350,18 @@ void test_all_zipfian()
                 wrong_get++;
             }
         }
+        for (uint64_t i = 0; i < PUT_SIZE; i++)
+        {
+            db->Put(data_base[rand_pos[i]], ranny.RandUint32(0, INT32_MAX));
+        }
 
         timer.Record("stop");
-        std::cout << "wrong get: " << wrong_get << std::endl;
+        cout << "wrong get: " << wrong_get << endl;
         us_times = timer.Microsecond("stop", "start");
-        std::cout << "[Metic-Operate]: Operate " << GET_SIZE << " theta: " << thetas[k] << ", "
-                  << "cost " << us_times / 1000000.0 << "s, "
-                  << "iops " << (double)(GET_SIZE) / (double)us_times * 1000000.0 << " ." << std::endl;
-        std::cout << "dram space use: " << (physical_memory_used_by_process() - init_dram_space_use) / 1024.0 / 1024.0 << " GB" << std::endl;
+        cout << "[Metic-Operate]: Operate " << tot << " theta: " << thetas[k] << ", "
+             << "cost " << us_times / 1000000.0 << "s, "
+             << "iops " << (double)(tot) / (double)us_times * 1000000.0 << " ." << endl;
+        cout << "dram space use: " << (physical_memory_used_by_process() - init_dram_space_use) / 1024.0 / 1024.0 << " GB" << endl;
     }
 }
 
@@ -409,7 +418,7 @@ void init_opts(int argc, char *argv[])
                 // return 0;
                 exit(0);
             default:
-                std::cerr << "Parse Argument Error!" << std::endl;
+                std::cerr << "Parse Argument Error!" << endl;
                 abort();
             }
             break;
@@ -423,19 +432,19 @@ void init_opts(int argc, char *argv[])
         case '?':
             break;
         default:
-            std::cout << (char)c << std::endl;
+            cout << (char)c << endl;
             abort();
         }
     }
 
-    std::cout << "THREAD NUMBER:         " << thread_num << std::endl;
-    std::cout << "LOAD_SIZE:             " << LOAD_SIZE << std::endl;
-    std::cout << "PUT_SIZE:              " << PUT_SIZE << std::endl;
-    std::cout << "GET_SIZE:              " << GET_SIZE << std::endl;
-    std::cout << "DB  name:              " << dbName << std::endl;
-    std::cout << "Loads type:            " << Loads_type << std::endl;
-    // std::cout << "Workload:              " << load_file << std::endl;
-    std::cout << "Theta:                 " << theta << std::endl;
+    cout << "THREAD NUMBER:         " << thread_num << endl;
+    cout << "LOAD_SIZE:             " << LOAD_SIZE << endl;
+    cout << "PUT_SIZE:              " << PUT_SIZE << endl;
+    cout << "GET_SIZE:              " << GET_SIZE << endl;
+    cout << "DB  name:              " << dbName << endl;
+    cout << "Loads type:            " << Loads_type << endl;
+    // cout << "Workload:              " << load_file << endl;
+    cout << "Theta:                 " << theta << endl;
 
     switch (Loads_type)
     {
@@ -457,7 +466,7 @@ void init_opts(int argc, char *argv[])
     }
 
     init_dram_space_use = physical_memory_used_by_process();
-    std::cout << "before newdb, dram space use: " << init_dram_space_use / 1024.0 / 1024.0 << " GB" << std::endl;
+    cout << "before newdb, dram space use: " << init_dram_space_use / 1024.0 / 1024.0 << " GB" << endl;
 
     if (dbName == "fastfair")
     {
@@ -482,8 +491,7 @@ int main(int argc, char *argv[])
     init_opts(argc, argv);
     db->Init();
     load();
-    load_pos = LOAD_SIZE;
-    db->Info();
+    // db->Info();
     test_uniform();
     test_all_zipfian();
     return 0;
