@@ -49,6 +49,7 @@ uint64_t us_times;
 uint64_t load_pos = 0;
 int load_size = 0;
 size_t init_dram_space_use;
+std::string dbName = "apex";
 
 // 实时获取程序占用的内存，单位：kb。
 size_t physical_memory_used_by_process()
@@ -238,16 +239,28 @@ void load()
     cout << "Start loading ...." << endl;
     timer.Record("start");
 
-    auto values = new std::pair<uint64_t, uint64_t>[LOAD_SIZE];
-    for (int i = 0; i < LOAD_SIZE; i++)
+    if (dbName == "apex") // bulk load
     {
-        values[i].first = data_base[i];
-        values[i].second = data_base[i] + 1;
+        auto values = new std::pair<uint64_t, uint64_t>[LOAD_SIZE];
+        for (int i = 0; i < LOAD_SIZE; i++)
+        {
+            values[i].first = data_base[i];
+            values[i].second = data_base[i] + 1;
+        }
+        sort(values, values + LOAD_SIZE,
+             [](auto const &a, auto const &b)
+             { return a.first < b.first; });
+        db->Bulk_load(values, int(LOAD_SIZE));
     }
-    sort(values, values + LOAD_SIZE,
-         [](auto const &a, auto const &b)
-         { return a.first < b.first; });
-    db->Bulk_load(values, int(LOAD_SIZE));
+    else // put one by one
+    {
+        for (int i = 0; i < LOAD_SIZE; i++)
+        {
+            // cout << i << " put: " << data_base[i] << endl;
+            db->Put(data_base[i], data_base[i] + 1);
+        }
+    }
+
     std::cerr << endl;
 
     timer.Record("stop");
@@ -382,7 +395,6 @@ void init_opts(int argc, char *argv[])
 
     int c;
     int opt_idx;
-    std::string dbName = "fastfair";
     std::string load_file = "";
 
     while ((c = getopt_long(argc, argv, "t:s:dh", opts, &opt_idx)) != -1)

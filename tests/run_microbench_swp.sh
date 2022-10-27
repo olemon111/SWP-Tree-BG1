@@ -90,9 +90,8 @@ function main() {
     fi 
 }
 
-# main fastfair 2000000 10000000 0 1 0.99
+main fastfair 2000000 10000000 0 1 0.99
 # main apex 2000000 10000000 0 1 0.99
-main apex 2000000 10000000 0 1 0.99
 # main apex 2000000 10000000 0 1 0.99
 # main apex 16 10000000 0 1 0.99
 # main apex 20 10000000 0 1 0.99

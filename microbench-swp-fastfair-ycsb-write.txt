@@ -1,0 +1,27 @@
+2022年 10月 28日 星期五 00:32:31 CST
+THREAD NUMBER:         1
+LOAD_SIZE:             2000000
+PUT_SIZE:              10000000
+GET_SIZE:              0
+DB  name:              fastfair
+Loads type:            1
+Theta:                 0.99
+Use: generate_random_ycsb
+generate 2000000 values in 731 ms (2.73598 M values/s)
+0: 864931559
+1: 617132288
+2: 1368210924
+3: 18446744073665602498
+4: 1813668564
+5: 18446744073206218607
+6: 18446744073627676534
+7: 2073659187
+8: 18446744072448967184
+9: 18446744072259084180
+------------------------------
+before newdb, dram space use: 0.0805702 GB
+before init btree
+before create new page
+[Fast-Fair]: root is 0x557c3bff42b0, btree is 0x557c3ef003c0.
+init db
+Start loading ....
