@@ -1,4 +1,4 @@
-2022年 10月 27日 星期四 19:18:18 CST
+2022年 10月 27日 星期四 19:34:13 CST
 THREAD NUMBER:         1
 LOAD_SIZE:             2000000
 PUT_SIZE:              0
@@ -7,44 +7,44 @@ DB  name:              apex
 Loads type:            1
 Theta:                 0.99
 Use: generate_random_ycsb
-generate 2000000 values in 663 ms (3.01659 M values/s)
-0: 18446744072685833489
-1: 18446744072372245267
-2: 18446744073618958463
-3: 18446744072936369466
-4: 18446744072778570569
-5: 1326500281
-6: 160738972
-7: 18446744071631400919
-8: 18446744073620173626
-9: 1456971837
+generate 2000000 values in 713 ms (2.80505 M values/s)
+0: 18446744072875057666
+1: 1944671523
+2: 18446744072950264141
+3: 1500216507
+4: 99663658
+5: 18446744072402296855
+6: 18446744073547264047
+7: 18446744072016123091
+8: 18446744073332772764
+9: 1557958896
 ------------------------------
-before newdb, dram space use: 0.0808372 GB
+before newdb, dram space use: 0.0808868 GB
 creating a new pool
-pool opened at: 0x7f47c0000000
+pool opened at: 0x7f8f80000000
 Intial allocator: 1
 Start loading ....
-[Metic-Load]: Load 2000000: cost 2.59608s, iops 770391 .
+[Metic-Load]: Load 2000000: cost 2.95711s, iops 676337 .
 Start Testing Uniform Workload
-wrong get: 134
-[Metic-Operate]: Operate 10000000 theta 0: cost 4.3086s, iops 2.32094e+06 .
-dram space use: 0.0937614 GB
+wrong get: 133
+[Metic-Operate]: Operate 10000000 theta 0: cost 4.55228s, iops 2.1967e+06 .
+dram space use: 0.0908318 GB
 Start Testing Zipfian Workload
-wrong get: 259
-[Metic-Operate]: Operate 10000000 theta: 0.6, cost 3.74153s, iops 2.6727e+06 .
-dram space use: 0.0938492 GB
-wrong get: 331
-[Metic-Operate]: Operate 10000000 theta: 0.7, cost 3.4519s, iops 2.89696e+06 .
-dram space use: 0.0938492 GB
-wrong get: 350
-[Metic-Operate]: Operate 10000000 theta: 0.8, cost 3.00203s, iops 3.33108e+06 .
-dram space use: 0.0938492 GB
-wrong get: 342
-[Metic-Operate]: Operate 10000000 theta: 0.9, cost 2.5301s, iops 3.95241e+06 .
-dram space use: 0.0938492 GB
-wrong get: 334
-[Metic-Operate]: Operate 10000000 theta: 0.95, cost 2.17523s, iops 4.59722e+06 .
-dram space use: 0.0938492 GB
-wrong get: 328
-[Metic-Operate]: Operate 10000000 theta: 0.99, cost 2.05811s, iops 4.85882e+06 .
-dram space use: 0.0938492 GB
+wrong get: 123
+[Metic-Operate]: Operate 10000000 theta: 0.6, cost 3.98507s, iops 2.50937e+06 .
+dram space use: 0.0909729 GB
+wrong get: 111
+[Metic-Operate]: Operate 10000000 theta: 0.7, cost 3.65716s, iops 2.73436e+06 .
+dram space use: 0.0909729 GB
+wrong get: 96
+[Metic-Operate]: Operate 10000000 theta: 0.8, cost 3.21741s, iops 3.10809e+06 .
+dram space use: 0.0909729 GB
+wrong get: 81
+[Metic-Operate]: Operate 10000000 theta: 0.9, cost 2.54423s, iops 3.93046e+06 .
+dram space use: 0.0909729 GB
+wrong get: 53
+[Metic-Operate]: Operate 10000000 theta: 0.95, cost 2.21348s, iops 4.51777e+06 .
+dram space use: 0.0909729 GB
+wrong get: 38
+[Metic-Operate]: Operate 10000000 theta: 0.99, cost 1.98016s, iops 5.05009e+06 .
+dram space use: 0.0909729 GB

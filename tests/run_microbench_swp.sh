@@ -22,6 +22,8 @@ function Run() {
 
     # echo "${BUILDDIR}/microbench_swp --dbname ${dbname} --load-size ${loadnum} "\
     # "--put-size ${0} --get-size ${opnum} --workload ${WorkLoad} --loadstype 1 --theta ${theta} -t $thread"
+
+    # Read
     rm -f /mnt/pmem1/lbl/*
     Loadname="ycsb-read"
     date | tee microbench-swp-${dbname}-${Loadname}.txt
@@ -33,6 +35,7 @@ function Run() {
     echo "${BUILDDIR}/microbench_swp --dbname ${dbname} --load-size ${loadnum} "\
     "--put-size 0 --get-size ${opnum} --loadstype 1 --theta ${theta} -t $thread"
 
+    # # Write
     # rm -f /mnt/pmem1/lbl/*
     # Loadname="ycsb-write"
     # date | tee microbench-swp-${dbname}-${Loadname}.txt
