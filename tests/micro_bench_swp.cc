@@ -358,13 +358,18 @@ int main(int argc, char *argv[])
     {
         // Load
         std::cout << "Start loading ...." << std::endl;
-        util::FastRandom ranny(18);
         timer.Record("start");
-        for (load_pos = load_size; load_pos < LOAD_SIZE; load_pos++)
+
+        auto values = new std::pair<uint64_t, uint64_t>[LOAD_SIZE];
+        for (int i = 0; i < LOAD_SIZE; i++)
         {
-            cout << load_pos << ": " << data_base[load_pos] << endl;
-            db->Put(data_base[load_pos], (uint64_t)(data_base[load_pos] + 1));
+            values[i].first = data_base[i];
+            values[i].second = data_base[i] + 1;
         }
+        sort(values, values + LOAD_SIZE,
+             [](auto const &a, auto const &b)
+             { return a.first < b.first; });
+        db->Bulk_load(values, int(LOAD_SIZE));
         std::cerr << std::endl;
 
         timer.Record("stop");
@@ -373,66 +378,43 @@ int main(int argc, char *argv[])
                   << "cost " << us_times / 1000000.0 << "s, "
                   << "iops " << (double)(LOAD_SIZE) / (double)us_times * 1000000.0 << " ." << std::endl;
     }
+    // {
+    //     // Load
+    //     std::cout << "Start loading ...." << std::endl;
+    //     util::FastRandom ranny(18);
+    //     timer.Record("start");
+    //     for (load_pos = load_size; load_pos < LOAD_SIZE; load_pos++)
+    //     {
+    //         cout << load_pos << ": " << data_base[load_pos] << endl;
+    //         db->Put(data_base[load_pos], (uint64_t)(data_base[load_pos] + 1));
+    //     }
+    //     std::cerr << std::endl;
+
+    //     timer.Record("stop");
+    //     us_times = timer.Microsecond("stop", "start");
+    //     std::cout << "[Metic-Load]: Load " << LOAD_SIZE << ": "
+    //               << "cost " << us_times / 1000000.0 << "s, "
+    //               << "iops " << (double)(LOAD_SIZE) / (double)us_times * 1000000.0 << " ." << std::endl;
+    // }
     load_pos = LOAD_SIZE;
     db->Info();
-    // Uniform Test
-    std::cout << "Start Testing Uniform Workload" << std::endl;
-    // // generate random array
-    util::FastRandom ranny(18);
-    vector<uint32_t> rand_pos;
-    std::mt19937_64 gen(std::random_device{}());
-    std::uniform_int_distribution<uint32_t> dis(0, load_pos - 1);
-    for (uint64_t i = 0; i < GET_SIZE; i++)
     {
-        rand_pos.push_back(ranny.RandUint32(0, load_pos - 1));
-    }
-
-    timer.Clear();
-    timer.Record("start");
-
-    int wrong_get = 0;
-    uint64_t value = 0;
-    for (uint64_t i = 0; i < GET_SIZE; i++)
-    {
-        db->Get(data_base[rand_pos[i]], value);
-        if (value != data_base[rand_pos[i]] + 1)
-        {
-            wrong_get++;
-        }
-    }
-
-    timer.Record("stop");
-    std::cout << "wrong get: " << wrong_get << std::endl;
-    us_times = timer.Microsecond("stop", "start");
-    std::cout << "[Metic-Operate]: Operate " << GET_SIZE << " theta " << 0 << ": "
-              << "cost " << us_times / 1000000.0 << "s, "
-              << "iops " << (double)(GET_SIZE) / (double)us_times * 1000000.0 << " ." << std::endl;
-    std::cout << "dram space use: " << (physical_memory_used_by_process() - init_dram_space_use) / 1024.0 / 1024.0 << " GB" << std::endl;
-
-    // sleep(10);
-    // sleep(100);
-    // Zipfian Test
-    std::cout << "Start Testing Zipfian Workload" << std::endl;
-
-    std::vector<float> thetas = {0.6, 0.7, 0.8, 0.9, 0.95, 0.99};
-    float zipf_theta = 0.6;
-    for (int k = 0; k < thetas.size(); k++)
-    {
-        std::default_random_engine generator_;
-        zipfian_int_distribution<int> dis(0, load_pos - 1, thetas[k]);
-        rand_pos.clear();
+        // Uniform Test
+        std::cout << "Start Testing Uniform Workload" << std::endl;
+        util::FastRandom ranny(18);
+        vector<uint32_t> rand_pos;
+        std::mt19937_64 gen(std::random_device{}());
+        std::uniform_int_distribution<uint32_t> dis(0, load_pos - 1);
         for (uint64_t i = 0; i < GET_SIZE; i++)
         {
-            uint32_t pos = dis(gen);
-            rand_pos.push_back(pos);
+            rand_pos.push_back(ranny.RandUint32(0, load_pos - 1));
         }
-        std::random_shuffle(rand_pos.begin(), rand_pos.end());
 
         timer.Clear();
         timer.Record("start");
 
-        wrong_get = 0;
-        value = 0;
+        int wrong_get = 0;
+        uint64_t value = 0;
         for (uint64_t i = 0; i < GET_SIZE; i++)
         {
             db->Get(data_base[rand_pos[i]], value);
@@ -445,10 +427,55 @@ int main(int argc, char *argv[])
         timer.Record("stop");
         std::cout << "wrong get: " << wrong_get << std::endl;
         us_times = timer.Microsecond("stop", "start");
-        std::cout << "[Metic-Operate]: Operate " << GET_SIZE << " theta: " << thetas[k] << ", "
+        std::cout << "[Metic-Operate]: Operate " << GET_SIZE << " theta " << 0 << ": "
                   << "cost " << us_times / 1000000.0 << "s, "
                   << "iops " << (double)(GET_SIZE) / (double)us_times * 1000000.0 << " ." << std::endl;
         std::cout << "dram space use: " << (physical_memory_used_by_process() - init_dram_space_use) / 1024.0 / 1024.0 << " GB" << std::endl;
+        // sleep(60);
+    }
+    {
+        // Zipfian Test
+        util::FastRandom ranny(18);
+        vector<uint32_t> rand_pos;
+        std::cout << "Start Testing Zipfian Workload" << std::endl;
+
+        std::vector<float> thetas = {0.6, 0.7, 0.8, 0.9, 0.95, 0.99};
+        float zipf_theta = 0.6;
+        for (int k = 0; k < thetas.size(); k++)
+        {
+            std::default_random_engine generator_;
+            zipfian_int_distribution<int> dis(0, load_pos - 1, thetas[k]);
+            rand_pos.clear();
+            for (uint64_t i = 0; i < GET_SIZE; i++)
+            {
+                uint32_t pos = dis(generator_);
+                rand_pos.push_back(pos);
+            }
+            std::random_shuffle(rand_pos.begin(), rand_pos.end());
+
+            timer.Clear();
+            timer.Record("start");
+
+            int wrong_get = 0;
+            uint64_t value = 0;
+            for (uint64_t i = 0; i < GET_SIZE; i++)
+            {
+                db->Get(data_base[rand_pos[i]], value);
+                if (value != data_base[rand_pos[i]] + 1)
+                {
+                    wrong_get++;
+                }
+            }
+
+            timer.Record("stop");
+            std::cout << "wrong get: " << wrong_get << std::endl;
+            us_times = timer.Microsecond("stop", "start");
+            std::cout << "[Metic-Operate]: Operate " << GET_SIZE << " theta: " << thetas[k] << ", "
+                      << "cost " << us_times / 1000000.0 << "s, "
+                      << "iops " << (double)(GET_SIZE) / (double)us_times * 1000000.0 << " ." << std::endl;
+            std::cout << "dram space use: " << (physical_memory_used_by_process() - init_dram_space_use) / 1024.0 / 1024.0 << " GB" << std::endl;
+            // sleep(60);
+        }
     }
 
     return 0;
