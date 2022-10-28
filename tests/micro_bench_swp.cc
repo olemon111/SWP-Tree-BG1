@@ -287,6 +287,7 @@ void load()
     //               << "cost " << us_times / 1000000.0 << "s, "
     //               << "iops " << (double)(LOAD_SIZE) / (double)us_times * 1000000.0 << " ." << endl;
     // }
+    sleep(40);
 }
 
 void test_uniform()

@@ -18,24 +18,6 @@ using combotree::ComboTree;
 using FastFair::btree;
 using namespace std;
 
-char *ull2chars(uint64_t i)
-{
-  stringstream ss;
-  char *ch = new char[8];
-  ss << i;
-  ss >> ch;
-  return ch;
-}
-
-uint64_t chars2ull(char *ch)
-{
-  stringstream ss;
-  uint64_t i;
-  ss << ch;
-  ss >> i;
-  return i;
-}
-
 namespace KV
 {
   class Key_t
@@ -220,6 +202,8 @@ namespace dbInter
       memcpy(kp, &key, sizeof(key));
       memcpy(vp, &value, sizeof(value));
       tree_->insert(kp, sizeof(key), vp, sizeof(value));
+      delete kp, vp;
+      kp = NULL, vp = NULL;
       return 1;
     }
     int Get(uint64_t key, uint64_t &value)
@@ -230,6 +214,8 @@ namespace dbInter
       uint64_t res;
       memcpy(&res, vp, sizeof(value));
       value = res;
+      delete kp, vp;
+      kp = NULL, vp = NULL;
       return 1;
     }
     int Update(uint64_t key, uint64_t value)
@@ -238,6 +224,8 @@ namespace dbInter
       memcpy(kp, &key, sizeof(key));
       memcpy(vp, &value, sizeof(value));
       tree_->update(kp, sizeof(key), vp, sizeof(value));
+      delete kp, vp;
+      kp = NULL, vp = NULL;
       return 1;
     }
     int Delete(uint64_t key)
