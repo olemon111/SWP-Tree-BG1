@@ -310,14 +310,17 @@ void test_uniform()
     for (uint64_t i = 0; i < GET_SIZE; i++)
     {
         db->Get(data_base[rand_pos[i]], value);
+        // cout << "get: " << data_base[rand_pos[i]] << endl;
         if (value != data_base[rand_pos[i]] + 1)
         {
+            // cout << "value: " << value << endl;
             wrong_get++;
         }
     }
     for (uint64_t i = 0; i < PUT_SIZE; i++)
     {
-        db->Put(data_base[rand_pos[i]], ranny.RandUint32(0, INT32_MAX));
+        // cout << "write: " << data_base[rand_pos[i]] << endl;
+        db->Update(data_base[rand_pos[i]], ranny.RandUint32(0, INT32_MAX));
     }
 
     timer.Record("stop");

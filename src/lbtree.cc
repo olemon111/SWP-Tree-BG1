@@ -15,6 +15,7 @@
  * efficient solution for update consistency on NVM memory.  However, the node
  * size is limited to up to 128B.
  */
+
 #include "lbtree/lbtree.h"
 
 /* ----------------------------------------------------------------- *
@@ -22,7 +23,7 @@
  * ----------------------------------------------------------------- */
 static int last_slot_in_line[LEAF_KEY_NUM];
 
-static void initUseful(void)
+void initUseful(void)
 {
     // line 0
     last_slot_in_line[0] = 2;
@@ -85,10 +86,10 @@ int lbtree::bulkloadSubtree(
 
     // 1. compute leaf and nonleaf number of keys
     int leaf_fill_num = (int)((float)LEAF_KEY_NUM * bfill);
-    leaf_fill_num = lbtmax(leaf_fill_num, 1);
+    leaf_fill_num = lbt_max(leaf_fill_num, 1);
 
     int nonleaf_fill_num = (int)((float)NON_LEAF_KEY_NUM * bfill);
-    nonleaf_fill_num = lbtmax(nonleaf_fill_num, 1);
+    nonleaf_fill_num = lbt_max(nonleaf_fill_num, 1);
 
     // 2. compute number of nodes
     n_nodes[0] = ceiling(num_key, leaf_fill_num);
@@ -147,7 +148,11 @@ int lbtree::bulkloadSubtree(
         {
 
             // get key from input
+#ifdef VAR_KEY
+            key_type mykey = (key_type)(new uint64_t);
+#else
             key_type mykey = (key_type)(input->get_key(key_id));
+#endif
             key_id++;
 
             // entry
@@ -239,7 +244,7 @@ int lbtree::bulkloadToptree(
 
     // 1. compute nonleaf number of keys
     int nonleaf_fill_num = (int)((float)NON_LEAF_KEY_NUM * bfill);
-    nonleaf_fill_num = lbtmax(nonleaf_fill_num, 1);
+    nonleaf_fill_num = lbt_max(nonleaf_fill_num, 1);
 
     // 2. compute number of nodes
     n_nodes[cur_level] = num_key;
@@ -421,14 +426,14 @@ int lbtree::bulkload(int keynum, keyInput *input, float bfill)
     {
         threads[i] = std::thread([=]()
                                  {
-                       worker_id= i;
-                       keyInput *cursor= input->openCursor(
-                                       bta[i].start_key, bta[i].num_key);
-                       bta[i].top_level= bulkloadSubtree(
-                               cursor, bta[i].start_key, bta[i].num_key,
-                               bfill, 31,
-                               bta[i].pfirst, bta[i].n_nodes);
-                       input->closeCursor(cursor); });
+            worker_id = i;
+            keyInput *cursor = input->openCursor(
+                bta[i].start_key, bta[i].num_key);
+            bta[i].top_level = bulkloadSubtree(
+                cursor, bta[i].start_key, bta[i].num_key,
+                bfill, 31,
+                bta[i].pfirst, bta[i].n_nodes);
+            input->closeCursor(cursor); });
     }
     for (int i = 0; i < num_threads; i++)
         threads[i].join();
@@ -488,7 +493,9 @@ void *lbtree::lookup(key_type key, int *pos)
     bnode *p;
     bleaf *lp;
     int i, t, m, b;
-    key_type r;
+#ifdef VAR_KEY
+    int c;
+#endif
 
     unsigned char key_hash = hashcode1B(key);
     int ret_pos;
@@ -503,10 +510,10 @@ Again1:
 
     for (i = tree_meta->root_level; i > 0; i--)
     {
-
+#ifdef PREFETCH
         // prefetch the entire node
         NODE_PREF(p);
-
+#endif
         // if the lock bit is set, abort
         if (p->lock())
         {
@@ -520,11 +527,18 @@ Again1:
         while (b + 7 <= t)
         {
             m = (b + t) >> 1;
-            r = key - p->k(m);
-            if (r > 0)
+#ifdef VAR_KEY
+            c = vkcmp((char *)p->k(m), (char *)key);
+            if (c > 0)
                 b = m + 1;
-            else if (r < 0)
+            else if (c < 0)
                 t = m - 1;
+#else
+            if (key > p->k(m))
+                b = m + 1;
+            else if (key < p->k(m))
+                t = m - 1;
+#endif
             else
             {
                 p = p->ch(m);
@@ -534,8 +548,13 @@ Again1:
 
         // sequential search (which is slightly faster now)
         for (; b <= t; b++)
+#ifdef VAR_KEY
+            if (vkcmp((char *)key, (char *)p->k(b)) > 0)
+                break;
+#else
             if (key < p->k(b))
                 break;
+#endif
         p = p->ch(b - 1);
 
     inner_done:;
@@ -544,9 +563,10 @@ Again1:
     // 3. search leaf node
     lp = (bleaf *)p;
 
+#ifdef PREFETCH
     // prefetch the entire node
     LEAF_PREF(lp);
-
+#endif
     // if the lock bit is set, abort
     if (lp->lock)
     {
@@ -577,14 +597,24 @@ Again1:
     {
         int jj = bitScan(mask) - 1; // next candidate
 
+#ifdef VAR_KEY
+        if (vkcmp((char *)lp->k(jj), (char *)key) == 0)
+        { // found
+            ret_pos = jj;
+            break;
+        }
+#else
         if (lp->k(jj) == key)
         { // found
             ret_pos = jj;
             break;
         }
+#endif
 
         mask &= ~(0x1 << jj); // remove this bit
-    }                         // end while
+        /*  UBSan: implicit conversion from int -65 to unsigned int
+            changed the value to 4294967231 (32-bit, unsigned)      */
+    } // end while
 
     // 4. RTM commit
     _xend();
@@ -609,6 +639,25 @@ void lbtree::qsortBleaf(bleaf *p, int start, int end, int pos[])
 
     l = start;
     r = end;
+#ifdef VAR_KEY
+    while (l < r)
+    {
+        while ((l < r) && (vkcmp((char *)p->k(pos[r]), (char *)key) < 0))
+            r--;
+        if (l < r)
+        {
+            pos[l] = pos[r];
+            l++;
+        }
+        while ((l < r) && (vkcmp((char *)p->k(pos[l]), (char *)key) >= 0))
+            l++;
+        if (l < r)
+        {
+            pos[r] = pos[l];
+            r--;
+        }
+    }
+#else
     while (l < r)
     {
         while ((l < r) && (p->k(pos[r]) > key))
@@ -626,6 +675,7 @@ void lbtree::qsortBleaf(bleaf *p, int start, int end, int pos[])
             r--;
         }
     }
+#endif
     pos[l] = pos_start;
     qsortBleaf(p, start, l - 1, pos);
     qsortBleaf(p, l + 1, end, pos);
@@ -655,15 +705,18 @@ void lbtree::insert(key_type key, void *ptr)
         bnode *p;
         bleaf *lp;
         int i, t, m, b;
-        key_type r;
+#ifdef VAR_KEY
+        int c;
+#endif
 
     Again2:
         // 1. RTM begin
         if (_xbegin() != _XBEGIN_STARTED)
         {
             // random backoff
-            // sum= 0;
-            // for (int i=(rdtsc() % 1024); i>0; i--) sum += i;
+            sum = 0;
+            for (int i = (rdtsc() % 1024); i > 0; i--)
+                sum += i;
             goto Again2;
         }
 
@@ -672,9 +725,10 @@ void lbtree::insert(key_type key, void *ptr)
 
         for (i = tree_meta->root_level; i > 0; i--)
         {
-
+#ifdef PREFETCH
             // prefetch the entire node
             NODE_PREF(p);
+#endif
 
             // if the lock bit is set, abort
             if (p->lock())
@@ -692,11 +746,18 @@ void lbtree::insert(key_type key, void *ptr)
             while (b + 7 <= t)
             {
                 m = (b + t) >> 1;
-                r = key - p->k(m);
-                if (r > 0)
+#ifdef VAR_KEY
+                c = vkcmp((char *)p->k(m), (char *)key);
+                if (c > 0)
                     b = m + 1;
-                else if (r < 0)
+                else if (c < 0)
                     t = m - 1;
+#else
+                if (key > p->k(m))
+                    b = m + 1;
+                else if (key < p->k(m))
+                    t = m - 1;
+#endif
                 else
                 {
                     p = p->ch(m);
@@ -707,8 +768,13 @@ void lbtree::insert(key_type key, void *ptr)
 
             // sequential search (which is slightly faster now)
             for (; b <= t; b++)
+#ifdef VAR_KEY
+                if (vkcmp((char *)key, (char *)p->k(b)) > 0)
+                    break;
+#else
                 if (key < p->k(b))
                     break;
+#endif
             p = p->ch(b - 1);
             ppos[i] = b - 1;
 
@@ -718,9 +784,10 @@ void lbtree::insert(key_type key, void *ptr)
         // 3. search leaf node
         lp = (bleaf *)p;
 
+#ifdef PREFETCH
         // prefetch the entire node
         LEAF_PREF(lp);
-
+#endif
         // if the lock bit is set, abort
         if (lp->lock)
         {
@@ -751,15 +818,23 @@ void lbtree::insert(key_type key, void *ptr)
         while (mask)
         {
             int jj = bitScan(mask) - 1; // next candidate
-
+#ifdef VAR_KEY
+            if (vkcmp((char *)lp->k(jj), (char *)key) == 0)
+            { // found: do nothing, return
+                _xend();
+                return;
+            }
+#else
             if (lp->k(jj) == key)
             { // found: do nothing, return
                 _xend();
                 return;
             }
-
+#endif
             mask &= ~(0x1 << jj); // remove this bit
-        }                         // end while
+            /*  UBSan: implicit conversion from int -33 to unsigned int
+                changed the value to 4294967263 (32-bit, unsigned)      */
+        } // end while
 
         // 4. set lock bits before exiting the RTM transaction
         lp->lock = 1;
@@ -789,8 +864,9 @@ void lbtree::insert(key_type key, void *ptr)
         /* 1. leaf is not full */
         if (!isfull[0])
         {
-
+#if !defined(NVMPOOL_REAL) || !defined(UNLOCK_AFTER)
             meta.v.lock = 0; // clear lock in temp meta
+#endif
 
             // 1.1 get first empty slot
             uint16_t bitmap = meta.v.bitmap;
@@ -809,11 +885,21 @@ void lbtree::insert(key_type key, void *ptr)
             {
                 // 1.3.1 write word 0
                 meta.v.bitmap = bitmap;
-                lp->setWord0(&meta);
 
-                // 1.3.2 flush
+#if defined(NVMPOOL_REAL) && defined(NONTEMP)
+                lp->setWord0_temporal(&meta);
+#else
+                lp->setWord0(&meta);
+#endif
+// 1.3.2 flush
+#ifdef NVMPOOL_REAL
                 clwb(lp);
                 sfence();
+#endif
+
+#if defined(NVMPOOL_REAL) && defined(UNLOCK_AFTER)
+                ((bleafMeta *)lp)->v.lock = 0;
+#endif
 
                 return;
             }
@@ -821,6 +907,7 @@ void lbtree::insert(key_type key, void *ptr)
             // 1.4 line 1--3
             else
             {
+#ifdef ENTRY_MOVING
                 int last_slot = last_slot_in_line[slot];
                 int from = 0;
                 for (int to = slot + 1; to <= last_slot; to++)
@@ -836,16 +923,30 @@ void lbtree::insert(key_type key, void *ptr)
                         from++;
                     }
                 }
+#endif
 
-                // 1.4.2 flush the line containing slot
+// 1.4.2 flush the line containing slot
+#ifdef NVMPOOL_REAL
                 clwb(&(lp->k(slot)));
                 sfence();
+#endif
 
                 // 1.4.3 change meta and flush line 0
                 meta.v.bitmap = bitmap;
+#if defined(NVMPOOL_REAL) && defined(NONTEMP)
+                lp->setBothWords_temporal(&meta);
+#else
                 lp->setBothWords(&meta);
+#endif
+
+#ifdef NVMPOOL_REAL
                 clwb(lp);
                 sfence();
+#endif
+
+#if defined(NVMPOOL_REAL) && defined(UNLOCK_AFTER)
+                ((bleafMeta *)lp)->v.lock = 0;
+#endif
 
                 return;
             }
@@ -890,7 +991,11 @@ void lbtree::insert(key_type key, void *ptr)
         meta.v.alt = 1 - lp->alt;
 
         // 2.5 key > split_key: insert key into new node
+#ifdef VAR_KEY
+        if (vkcmp((char *)key, (char *)split_key) < 0)
+#else
         if (key > split_key)
+#endif
         {
             newp->k(split - 1) = key;
             newp->ch(split - 1) = ptr;
@@ -901,18 +1006,26 @@ void lbtree::insert(key_type key, void *ptr)
                 meta.v.lock = 0; // do not clear lock of root
         }
 
-        // 2.6 clwb newp, clwb lp line[3] and sfence
+// 2.6 clwb newp, clwb lp line[3] and sfence
+#ifdef NVMPOOL_REAL
         LOOP_FLUSH(clwb, newp, LEAF_LINE_NUM);
         clwb(&(lp->next[0]));
         sfence();
+#endif
 
         // 2.7 clwb lp and flush: NVM atomic write to switch alt and set bitmap
         lp->setBothWords(&meta);
+#ifdef NVMPOOL_REAL
         clwb(lp);
         sfence();
+#endif
 
         // 2.8 key < split_key: insert key into old node
+#ifdef VAR_KEY
+        if (vkcmp((char *)key, (char *)split_key) >= 0)
+#else
         if (key <= split_key)
+#endif
         {
 
             // note: lock bit is still set
@@ -937,13 +1050,16 @@ void lbtree::insert(key_type key, void *ptr)
                 // write word 0
                 meta.v.bitmap = bitmap;
                 lp->setWord0(&meta);
-                // flush
+// flush
+#ifdef NVMPOOL_REAL
                 clwb(lp);
                 sfence();
+#endif
             }
             // line 1--3
             else
             {
+#ifdef ENTRY_MOVING
                 int last_slot = last_slot_in_line[slot];
                 int from = 0;
                 for (int to = slot + 1; to <= last_slot; to++)
@@ -959,16 +1075,21 @@ void lbtree::insert(key_type key, void *ptr)
                         from++;
                     }
                 }
+#endif
 
-                // flush the line containing slot
+// flush the line containing slot
+#ifdef NVMPOOL_REAL
                 clwb(&(lp->k(slot)));
                 sfence();
+#endif
 
                 // change meta and flush line 0
                 meta.v.bitmap = bitmap;
                 lp->setBothWords(&meta);
+#ifdef NVMPOOL_REAL
                 clwb(lp);
                 sfence();
+#endif
             }
         }
 
@@ -1006,7 +1127,9 @@ void lbtree::insert(key_type key, void *ptr)
                 p->k(pos) = key;
                 p->ch(pos) = ptr;
                 p->num() = n + 1;
+#ifdef NVMPOOL_REAL
                 sfence();
+#endif
 
                 // unlock after all changes are globally visible
                 p->lock() = 0;
@@ -1066,13 +1189,16 @@ void lbtree::insert(key_type key, void *ptr)
         newp->ch(0) = tree_meta->tree_root;
         newp->ch(1) = ptr;
         newp->k(1) = key;
+#ifdef NVMPOOL_REAL
         sfence(); // ensure new node is consistent
+#endif
 
         void *old_root = tree_meta->tree_root;
         tree_meta->root_level = lev;
         tree_meta->tree_root = newp;
+#ifdef NVMPOOL_REAL
         sfence(); // tree root change is globablly visible
-                  // old root and new root are both locked
+#endif            // old root and new root are both locked
 
         // unlock old root
         if (total_level > 0)
@@ -1123,7 +1249,6 @@ void lbtree::del(key_type key)
         bnode *p;
         bleaf *lp;
         int i, t, m, b;
-        key_type r;
 
     Again3:
         // 1. RTM begin
@@ -1140,9 +1265,10 @@ void lbtree::del(key_type key)
 
         for (i = tree_meta->root_level; i > 0; i--)
         {
-
+#ifdef PREFETCH
             // prefetch the entire node
             NODE_PREF(p);
+#endif
 
             // if the lock bit is set, abort
             if (p->lock())
@@ -1159,10 +1285,9 @@ void lbtree::del(key_type key)
             while (b + 7 <= t)
             {
                 m = (b + t) >> 1;
-                r = key - p->k(m);
-                if (r > 0)
+                if (key > p->k(m))
                     b = m + 1;
-                else if (r < 0)
+                else if (key < p->k(m))
                     t = m - 1;
                 else
                 {
@@ -1185,8 +1310,10 @@ void lbtree::del(key_type key)
         // 3. search leaf node
         lp = (bleaf *)p;
 
+#ifdef PREFETCH
         // prefetch the entire node
         LEAF_PREF(lp);
+#endif
 
         // if the lock bit is set, abort
         if (lp->lock)
@@ -1298,11 +1425,25 @@ void lbtree::del(key_type key)
         {
             bleafMeta meta = *((bleafMeta *)lp);
 
-            meta.v.lock = 0;                  // clear lock in temp meta
+#if !defined(NVMPOOL_REAL) || !defined(UNLOCK_AFTER)
+            meta.v.lock = 0; // clear lock in temp meta
+#endif
+
             meta.v.bitmap &= ~(1 << ppos[0]); // mark the bitmap to delete the entry
+#if defined(NVMPOOL_REAL) && defined(NONTEMP)
+            lp->setWord0_temporal(&meta);
+#else
             lp->setWord0(&meta);
+#endif
+
+#ifdef NVMPOOL_REAL
             clwb(lp);
             sfence();
+#endif
+
+#if defined(NVMPOOL_REAL) && defined(UNLOCK_AFTER)
+            ((bleafMeta *)lp)->v.lock = 0;
+#endif
 
             return;
 
@@ -1315,8 +1456,10 @@ void lbtree::del(key_type key)
         {
             // remove it from sibling linked list
             leaf_sibp->next[leaf_sibp->alt] = lp->next[lp->alt];
+#ifdef NVMPOOL_REAL
             clwb(&(leaf_sibp->next[0]));
             sfence();
+#endif
 
             leaf_sibp->lock = 0; // lock bit is not protected.
                                  // It will be reset in recovery
@@ -1357,7 +1500,9 @@ void lbtree::del(key_type key)
                 for (i = pos; i < n; i++)
                     p->ent[i] = p->ent[i + 1];
                 p->num() = n - 1;
+#ifdef NVMPOOL_REAL
                 sfence();
+#endif
                 // all changes are globally visible now
 
                 // root is guaranteed to have 2 children
@@ -1377,11 +1522,260 @@ void lbtree::del(key_type key)
         // p==root has 1 child? so delete the root
         tree_meta->root_level = tree_meta->root_level - 1;
         tree_meta->tree_root = p->ch(0); // running transactions will abort
+#ifdef NVMPOOL_REAL
         sfence();
+#endif
 
         mempool_free_node(p);
         return;
     }
+}
+
+// Continue to add new record to result array, and shift the cur_idx
+// cur_idx points to a position that are empty
+// Return the cur_idx
+// inline int lbtree::add_to_sorted_result(std::pair<key_type, void*>* result, std::pair<key_type, void*>* new_record, int total_size, int cur_idx){
+//     if (cur_idx >= total_size)
+//     {
+//       if (result[total_size - 1].first < new_record->first)
+//       {
+//         return cur_idx;
+//       }
+//       cur_idx = total_size - 1; // Remove the last element
+//     }
+
+//     // Start the insertion sort
+//     int j = cur_idx - 1;
+//     while((j >= 0) && (result[j].first > new_record->first)){
+//       result[j + 1] = result[j];
+//       --j;
+//     }
+
+//     result[j + 1] = *new_record;
+//     ++cur_idx;
+//     return cur_idx;
+//   }
+
+// // Range scan in one node -- Author: Lu Baotong
+// int lbtree::range_scan_in_one_leaf(bleaf *lp, const key_type& key, uint32_t to_scan, std::pair<key_type, void*>* result){
+//     unsigned int mask = (unsigned int)(lp->bitmap);
+//     int cur_idx = 0;
+//     std::pair<key_type, void*> new_record;
+
+//     while (mask) {
+//         int jj = bitScan(mask)-1;  // next candidate
+//         if (lp->k(jj) >= key) { // found
+//             new_record.first = lp->k(jj);
+//             new_record.second = lp->ch(jj);
+//             // Add KV to the result array and matain its sort order
+//             cur_idx = add_to_sorted_result(result, &new_record, to_scan, cur_idx);
+//         }
+//         mask &= ~(0x1<<jj);  // remove this bit
+//     } // end while
+
+//     /*
+//     for(int i = 0; i < cur_idx; i++){
+//         std::cout << "key " << i << " = " << result[i].first << std::endl;
+//     }*/
+
+//     return cur_idx;
+// }
+
+// // Range query, first get the lock of node, and then atomically access each node in range
+// int lbtree::range_scan_by_size(const key_type& key,  uint32_t to_scan, char* my_result)
+// {
+//     std::pair<key_type, void*> *result = reinterpret_cast<std::pair<key_type, void*> *>(my_result);
+//     bnode *p;
+//     bleaf *lp;
+//     int i,t,m,b;
+//     int result_idx;
+
+//     unsigned char key_hash= hashcode1B(key);
+//     int ret_pos;
+
+// Again1:
+//     // 1. RTM begin
+//     result_idx = 0; // The idx of result array
+//     if(_xbegin() != _XBEGIN_STARTED) goto Again1;
+
+//     // 2. search nonleaf nodes
+//     p = tree_meta->tree_root;
+
+//     for (i=tree_meta->root_level; i>0; i--) {
+
+//         // prefetch the entire node
+//         NODE_PREF(p);
+
+//         // if the lock bit is set, abort
+//         if (p->lock()) {_xabort(1); goto Again1;}
+
+//         // binary search to narrow down to at most 8 entries
+//         b=1; t=p->num();
+//         while (b+7<=t) {
+//             m=(b+t) >>1;
+//             if (key > p->k(m)) b=m+1;
+//             else if (key < p->k(m)) t = m-1;
+//             else {p=p->ch(m); goto inner_done;}
+//         }
+
+//         // sequential search (which is slightly faster now)
+//         for (; b<=t; b++)
+//             if (key < p->k(b)) break;
+//         p = p->ch(b-1);
+
+//     inner_done: ;
+//     }
+
+//     // 3. search leaf node
+//     lp= (bleaf *)p;
+
+//     // prefetch the entire node
+//     LEAF_PREF (lp);
+
+//     // 4. real range query
+//     auto remaining_scan = to_scan;
+//     auto cur_result = result;
+//     while((remaining_scan != 0) && (lp != nullptr)){
+//         // if the lock bit is set, abort
+//         if (lp->lock) {_xabort(2); goto Again1;}
+//         auto cur_scan = range_scan_in_one_leaf(lp, key, remaining_scan, cur_result);
+//         remaining_scan = remaining_scan - cur_scan;
+//         cur_result = cur_result + cur_scan;
+//         lp = lp->next[0]; // BT(FIX ME), the next pointer is not always this
+//     }
+
+//     // 5. RTM commit
+//     _xend();
+
+//     return (to_scan - remaining_scan);
+// }
+
+static int compareFunc(const void *a, const void *b)
+{
+    key_type tt = (((IdxEntry *)a)->k - ((IdxEntry *)b)->k);
+    return ((tt > 0) ? 1 : ((tt < 0) ? -1 : 0));
+}
+
+int lbtree::rangeScan(key_type key, uint32_t scan_size, char *result)
+{
+    bnode *p;
+    bleaf *lp, *np = nullptr;
+    int i, t, m, b, jj;
+    unsigned int mask;
+    // volatile long long sum;
+    std::vector<IdxEntry> vec;
+    vec.reserve(scan_size);
+
+Again1: // find target leaf and lock it
+    // 1. RTM begin
+    if (_xbegin() != _XBEGIN_STARTED)
+    {
+        // Commented backoff because it will cause infinite abort in mempool mode
+        // sum= 0;
+        // for (int i=(rdtsc() % 1024); i>0; i--) sum += i;
+        goto Again1;
+    }
+    // 2. search nonleaf nodes
+    p = tree_meta->tree_root;
+    for (i = tree_meta->root_level; i > 0; i--)
+    {
+#ifdef PREFETCH
+        // prefetch the entire node
+        NODE_PREF(p);
+#endif
+        // if the lock bit is set, abort
+        if (p->lock())
+        {
+            _xabort(1);
+            std::this_thread::sleep_for(std::chrono::nanoseconds(1));
+            goto Again1;
+        }
+        // binary search to narrow down to at most 8 entries
+        b = 1;
+        t = p->num();
+        while (b + 7 <= t)
+        {
+            m = (b + t) >> 1;
+            if (key > p->k(m))
+                b = m + 1;
+            else if (key < p->k(m))
+                t = m - 1;
+            else
+            {
+                p = p->ch(m);
+                goto inner_done;
+            }
+        }
+        // sequential search (which is slightly faster now)
+        for (; b <= t; b++)
+            if (key < p->k(b))
+                break;
+        p = p->ch(b - 1);
+    inner_done:;
+    }
+    lp = (bleaf *)p;
+#ifdef PREFETCH
+    // prefetch the entire node
+    LEAF_PREF(lp);
+#endif
+    // if the lock bit is set, abort
+    if (lp->lock)
+    {
+        _xabort(2);
+        std::this_thread::sleep_for(std::chrono::nanoseconds(1));
+        goto Again1;
+    }
+    lp->lock = 1;
+    // 4. RTM commit
+    _xend();
+
+    while (lp)
+    {
+        mask = (unsigned int)(lp->bitmap);
+        while (mask)
+        {
+            jj = bitScan(mask) - 1; // next candidate
+            if (lp->k(jj) >= key)
+            { // found
+                vec.push_back(lp->ent[jj]);
+            }
+            mask &= ~(0x1 << jj); // remove this bit
+        }                         // end while
+        if (vec.size() >= scan_size)
+            break;
+        np = lockSibling(lp);
+        lp->lock = 0;
+        lp = np;
+    }
+    if (lp)
+        lp->lock = 0;
+    qsort(vec.data(), vec.size(), sizeof(IdxEntry), compareFunc);
+    memcpy(result, vec.data(), vec.size() * sizeof(IdxEntry));
+    return vec.size() > scan_size ? scan_size : vec.size();
+}
+
+bleaf *lbtree::lockSibling(bleaf *lp)
+{
+    // volatile long long sum;
+    bleaf *np = lp->nextSibling();
+    if (!np)
+        return NULL;
+Again2: // find and lock next sibling if necessary
+    if (_xbegin() != _XBEGIN_STARTED)
+    {
+        // sum= 0;
+        // for (int i=(rdtsc() % 1024); i>0; i--) sum += i;
+        goto Again2;
+    }
+    if (np->lock)
+    {
+        _xabort(2);
+        std::this_thread::sleep_for(std::chrono::nanoseconds(1));
+        goto Again2;
+    }
+    np->lock = 1;
+    _xend();
+    return np;
 }
 
 /* ----------------------------------------------------------------- *
@@ -1425,8 +1819,8 @@ void lbtree::randomize(Pointer8B pnode, int level)
 
             if (aa != bb)
             {
-                lbtswap(lp->fgpt[pos[aa]], lp->fgpt[pos[bb]]);
-                lbtswap(lp->ent[pos[aa]], lp->ent[pos[bb]]);
+                swap(lp->fgpt[pos[aa]], lp->fgpt[pos[bb]]);
+                swap(lp->ent[pos[aa]], lp->ent[pos[bb]]);
             }
         }
     }
@@ -1677,15 +2071,4 @@ tree *initTree(void *nvm_addr, bool recover)
 {
     tree *mytree = new lbtree(nvm_addr, recover);
     return mytree;
-}
-
-int main(int argc, char *argv[])
-{
-    printf("NON_LEAF_KEY_NUM= %d, LEAF_KEY_NUM= %d, nonleaf size= %lu, leaf size= %lu\n",
-           NON_LEAF_KEY_NUM, LEAF_KEY_NUM, sizeof(bnode), sizeof(bleaf));
-    assert((sizeof(bnode) == NONLEAF_SIZE) && (sizeof(bleaf) == LEAF_SIZE));
-
-    initUseful();
-
-    return parse_command(argc, argv);
 }

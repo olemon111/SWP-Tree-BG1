@@ -23,6 +23,8 @@
 #include <stdint.h>
 #include <thread>
 #include <atomic>
+#include <vector>
+#include <bits/hash_bytes.h>
 
 #include <immintrin.h>
 /* ---------------------------------------------------------------------- */
@@ -79,11 +81,17 @@ Returns the number of 1-bits in x.
 #define bitScan(x) __builtin_ffs(x)
 #define countBit(x) __builtin_popcount(x)
 
+extern size_t key_size_;
+
 static inline unsigned char hashcode1B(key_type x)
 {
+#ifdef VAR_KEY
+   return std::_Hash_bytes((char *)x, key_size_, 1) & 0xff;
+#else
    x ^= x >> 32;
    x ^= x >> 16;
    x ^= x >> 8;
+#endif
    return (unsigned char)(x & 0x0ffULL);
 }
 
@@ -95,19 +103,19 @@ static inline unsigned long long rdtsc(void)
    return ((unsigned long long)lo) | (((unsigned long long)hi) << 32);
 }
 
-#define lbtmin(x, y) ((x) <= (y) ? (x) : (y))
-#define lbtmax(x, y) ((x) <= (y) ? (y) : (x))
+#define lbt_min(x, y) ((x) <= (y) ? (x) : (y))
+#define lbt_max(x, y) ((x) <= (y) ? (y) : (x))
 
 // compute ceiling(x/y) and floor(x/y)
 #define ceiling(x, y) (((x) + (y)-1) / (y))
 #define floor(x, y) ((x) / (y))
 
-#define lbtswap(x, y) \
-   do                 \
-   {                  \
-      auto _t = (x);  \
-      (x) = (y);      \
-      (y) = _t;       \
+#define swap(x, y)   \
+   do                \
+   {                 \
+      auto _t = (x); \
+      (x) = (y);     \
+      (y) = _t;      \
    } while (0)
 
 /* ---------------------------------------------------------------------- */
@@ -187,6 +195,28 @@ public:
    {
       fprintf(stderr, "Not implemented!\n");
       exit(1);
+   }
+
+   /**
+    * range scan (Baotong's version)
+    *
+    * @param key   the index key to begin scan
+    * @param to_scan number of records to scan
+    * @param result array to store scan results
+    *
+    */
+   virtual int range_scan_by_size(const key_type &key, uint32_t to_scan, char *result)
+   {
+      fprintf(stderr, "Not implemented!\n");
+      exit(1);
+      return 0;
+   }
+
+   virtual int rangeScan(key_type key, uint32_t scan_size, char *result)
+   {
+      fprintf(stderr, "Not implemented!\n");
+      exit(1);
+      return 0;
    }
 
    /**

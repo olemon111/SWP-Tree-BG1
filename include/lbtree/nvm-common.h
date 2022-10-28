@@ -27,6 +27,18 @@
 
 #define NVMFLUSH_REAL
 
+// Use noop for xbegin, xend. Prints debug message for xabort
+// #define TSX_FAKE
+
+#if defined(TSX_FAKE)
+#define _xbegin() (~0u)
+#define _xend()
+#define _xabort(_xnum)               \
+  {                                  \
+    printf("_xabort(): %ld", _xnum); \
+  }
+#endif
+
 #if defined(NVMFLUSH_REAL)
 #undef NVMFLUSH_DUMMY
 #undef NVMFLUSH_STAT
@@ -68,7 +80,7 @@ static inline void clwb(void *addr)
 static inline void clwb2(void *start, void *end)
 {
   clwb(start);
-  if (lbtgetline(start) != lbtgetline(end))
+  if (lbt_getline(start) != lbt_getline(end))
   {
     clwb(end);
   }
@@ -81,8 +93,8 @@ static inline void clwb2(void *start, void *end)
  */
 static inline void clwbmore(void *start, void *end)
 {
-  unsigned long long start_line = lbtgetline(start);
-  unsigned long long end_line = lbtgetline(end);
+  unsigned long long start_line = lbt_getline(start);
+  unsigned long long end_line = lbt_getline(end);
   do
   {
     clwb((char *)start_line);
@@ -108,6 +120,7 @@ extern long long num_clwb, num_sfence;
 
 static inline void NVMFLUSH_STAT_init()
 {
+  puts("NVMFLUSH_STAT_init()");
   num_clwb = 0;
   num_sfence = 0;
 }
@@ -126,7 +139,7 @@ static inline void clwb(void *addr)
 static inline void clwb2(void *start, void *end)
 {
   num_clwb++;
-  if (getline(start) != getline(end))
+  if (lbt_getline(start) != lbt_getline(end))
   {
     num_clwb++;
   }
@@ -135,8 +148,8 @@ static inline void clwb2(void *start, void *end)
 
 static inline void clwbmore(void *start, void *end)
 {
-  unsigned long long start_line = getline(start);
-  unsigned long long end_line = getline(end);
+  unsigned long long start_line = lbt_getline(start);
+  unsigned long long end_line = lbt_getline(end);
   num_clwb += (end_line + CACHE_LINE_SIZE - start_line) / CACHE_LINE_SIZE;
 
   // printf("clwbmore(%p, %p)\n", start, end);
@@ -654,7 +667,7 @@ public:
   {
     flushLog();
 
-    pos->nextline_ptr_ = (char *)lbtgetline(pos->next_ptr_);
+    pos->nextline_ptr_ = (char *)lbt_getline(pos->next_ptr_);
     pos->version_ = (pos->nextline_ptr_[0] & 0x80);
   }
 

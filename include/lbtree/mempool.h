@@ -29,7 +29,6 @@
  * determine the allocated nodes and unused nodes.
  *
  */
-
 #ifndef _BTREE_MEM_POOL_H
 #define _BTREE_MEM_POOL_H
 
@@ -42,25 +41,51 @@
 #include <signal.h>
 #include <string.h>
 #include <malloc.h>
-#include <iostream>
+#include <stdint.h>
 
 /* -------------------------------------------------------------- */
 /* NVMPOOL_REAL: use pmdk to map NVM
  * undefined:    use memalign to allocate memory to simulate NVM
  */
-#define NVMPOOL_REAL // comment this out for using DRAM as NVM
+#include <libpmemobj.h>
 
-#ifdef NVMPOOL_REAL
-// use
-// PMEM_MMAP_HINT=desired_address
-// to map to a desired address
+//#define PMEM // comment this out to use DRAM as NVM (DRAM version LB+-Tree)
+//#define POOL // comment this out to use malloc and PMDK if #define PMEM
+
+//#define VAR_KEY
+
+#define ENTRY_MOVING
+#define PREFETCH
+
+#define FREE_ON_DELETE // comment this out to reuse freed leaves
+
+struct dummy
+{ // dummy class for using PMDK
+   char *arr[32];
+};
+
+extern uint64_t class_id;
+
+#ifdef PMEM
+#define NVMPOOL_REAL
 #include <libpmem.h>
+#ifndef POOL
+POBJ_LAYOUT_BEGIN(LBtree);
+POBJ_LAYOUT_TOID(LBtree, dummy);
+POBJ_LAYOUT_END(LBtree);
+
+#ifdef VAR_KEY
+POBJ_LAYOUT_BEGIN(Char);
+POBJ_LAYOUT_TOID(Char, char);
+POBJ_LAYOUT_END(Char);
+#endif
+#endif
 #endif
 
 /* -------------------------------------------------------------- */
 
 #ifndef MB
-#define MB (1024 * 1024)
+#define MB (1024LL * 1024LL)
 #endif
 
 /**
@@ -77,6 +102,7 @@ private:
    char *mempool_end;
    char *mempool_free_node;
    const char *mempool_name;
+   PMEMobjpool *pop;
 
 public:
    // ---
@@ -86,10 +112,11 @@ public:
    /**
     * constructor to set all internal states to null
     */
-   mempool()
+   mempool(PMEMobjpool *p = NULL)
    {
       mempool_start = mempool_cur = mempool_end = NULL;
       mempool_free_node = NULL;
+      pop = p;
    }
 
    /**
@@ -163,17 +190,32 @@ public:
     */
    void *alloc(unsigned long long size)
    {
-      std::cout << "mempool alloc" << mempool_cur << std::endl;
-      // std::cout << "cur: " << mempool_cur << ", end: " << mempool_end << std::endl;
-      if (mempool_cur + size <= mempool_end)
+#ifdef POOL
+      if (mempool_cur)
       {
-         register char *p;
-         p = mempool_cur;
-         mempool_cur += size;
-         return (void *)p;
+         if (mempool_cur + size <= mempool_end)
+         {
+            char *p;
+            p = mempool_cur;
+            mempool_cur += size;
+            return (void *)p;
+         }
+         fprintf(stderr, "%s alloc - run out of memory!\n", mempool_name);
+         abort();
       }
-      fprintf(stderr, "%s alloc - run out of memory!\n", mempool_name);
-      exit(1);
+#elif defined(PMEM)
+      if (pop)
+      {
+         thread_local pobj_action act;
+         auto x = POBJ_XRESERVE_NEW(pop, dummy, &act, POBJ_CLASS_ID(class_id));
+         D_RW(x)->arr[0] = NULL;
+         D_RW(x)->arr[31] = NULL;
+         (((unsigned long long)(D_RW(x)->arr)) & (~(unsigned long long)(64 - 1)));
+         (((unsigned long long)(D_RW(x)->arr + 32)) & (~(unsigned long long)(64 - 1)));
+         return pmemobj_direct(x.oid);
+      }
+#endif
+      return new (std::align_val_t(256)) char[size];
    }
 
    /**
@@ -198,7 +240,7 @@ public:
    {
       if (mempool_free_node)
       {
-         register char *p;
+         char *p;
          p = mempool_free_node;
          mempool_free_node = *((char **)p);
          return (void *)p;
@@ -216,8 +258,21 @@ public:
     */
    void free_node(void *p)
    {
+#if defined(FREE_ON_DELETE) && !defined(POOL)
+#ifdef PMEM
+      if (pop)
+      {
+         TOID(dummy)
+         n = pmemobj_oid(p);
+         POBJ_FREE(&n);
+         return;
+      }
+#endif
+      delete p;
+#else
       *((char **)p) = mempool_free_node;
       mempool_free_node = (char *)p;
+#endif
    }
 
    /**
@@ -371,15 +426,14 @@ extern threadNVMPools the_thread_nvmpools;
 
 #define the_mempool (the_thread_mempools.tm_pools[worker_id])
 #define mempool_alloc the_mempool.alloc
-#define mempool_free the_mempool.free
+// #define mempool_free the_mempool.free
 #define mempool_alloc_node the_mempool.alloc_node
 #define mempool_free_node the_mempool.free_node
 
 #define the_nvmpool (the_thread_nvmpools.tm_pools[worker_id])
 #define nvmpool_alloc the_nvmpool.alloc
-#define nvmpool_free the_nvmpool.free
+// #define nvmpool_free the_nvmpool.free
 #define nvmpool_alloc_node the_nvmpool.alloc_node
 #define nvmpool_free_node the_nvmpool.free_node
-
 /* -------------------------------------------------------------- */
 #endif /* _BTREE_MEM_POOL_H */

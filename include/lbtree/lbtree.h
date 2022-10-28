@@ -18,6 +18,7 @@
 
 #ifndef _LBTREE_H
 #define _LBTREE_H
+
 /* ---------------------------------------------------------------------- */
 
 #include "tree.h"
@@ -35,6 +36,10 @@
 #endif
 
 #define LEAF_KEY_NUM (14)
+
+// at most 1 of the following 2 macros may be defined
+//#define NONTEMP
+#define UNLOCK_AFTER
 
 /* ---------------------------------------------------------------------- */
 /**
@@ -186,6 +191,28 @@ public:
         my_meta->word8B[0] = m->word8B[0];
     }
 
+    void movnt64(uint64_t *dest, uint64_t const src, bool front, bool back)
+    {
+        if (front)
+            sfence();
+        _mm_stream_si64((long long int *)dest, (long long int)src);
+        if (back)
+            sfence();
+    }
+
+    void setWord0_temporal(bleafMeta *m)
+    {
+        bleafMeta *my_meta = (bleafMeta *)this;
+        movnt64((uint64_t *)&my_meta->word8B[0], m->word8B[0], false, true);
+    }
+
+    void setBothWords_temporal(bleafMeta *m)
+    {
+        bleafMeta *my_meta = (bleafMeta *)this;
+        my_meta->word8B[1] = m->word8B[1];
+        movnt64((uint64_t *)&my_meta->word8B[0], m->word8B[0], false, true);
+    }
+
 }; // bleaf
 
 /* ---------------------------------------------------------------------- */
@@ -285,6 +312,15 @@ public:
     // delete key
     void del(key_type key);
 
+    // // Range scan -- Author: Lu Baotong
+    // int range_scan_by_size(const key_type& key,  uint32_t to_scan, char* result);
+    // int range_scan_in_one_leaf(bleaf *lp, const key_type& key, uint32_t to_scan, std::pair<key_type, void*>* result);
+    // int add_to_sorted_result(std::pair<key_type, void*>* result, std::pair<key_type, void*>* new_record, int total_size, int cur_idx);
+
+    // Range Scan -- Author: George He
+    int rangeScan(key_type key, uint32_t scan_size, char *result);
+    bleaf *lockSibling(bleaf *lp);
+
 private:
     void print(Pointer8B pnode, int level);
     void check(Pointer8B pnode, int level, key_type &start, key_type &end, bleaf *&ptr);
@@ -305,12 +341,24 @@ public:
 
     int level() { return tree_meta->root_level; }
 
-    void PrintInfo()
-    {
-        printf("LBTree info..."); // TODO: add some information
-    }
-
 }; // lbtree
 
+void initUseful();
+
+#ifdef VAR_KEY
+static int vkcmp(char *a, char *b)
+{
+    /*
+        auto n = key_size_;
+        while(n--)
+            if( *a != *b )
+                return *a - *b;
+            else
+                a++,b++;
+        return 0;
+    */
+    return memcmp(a, b, key_size_);
+}
+#endif
 /* ---------------------------------------------------------------------- */
 #endif /* _LBTREE_H */

@@ -1,4 +1,4 @@
-2022年 10月 28日 星期五 15:08:37 CST
+2022年 10月 28日 星期五 21:08:10 CST
 THREAD NUMBER:         1
 LOAD_SIZE:             2000000
 PUT_SIZE:              0
@@ -7,20 +7,43 @@ DB  name:              lbtree
 Loads type:            1
 Theta:                 0.99
 Use: generate_random_ycsb
-generate 2000000 values in 665 ms (3.00752 M values/s)
-0: 1710708252
-1: 768711222
-2: 1903148469
-3: 18446744072272058872
-4: 18446744073615220345
-5: 733723600
-6: 846403752
-7: 627154241
-8: 18446744073193982354
-9: 1914274036
+generate 2000000 values in 674 ms (2.96736 M values/s)
+0: 458344641
+1: 866309966
+2: 18446744072198326934
+3: 1217562660
+4: 387791742
+5: 978661274
+6: 1327029401
+7: 1541585797
+8: 18446744071682876425
+9: 18446744073392326348
 ------------------------------
-before newdb, dram space use: 0.0809135 GB
-before init lbtree
-NVM mapping address: 0x7faf16400000, size: 209715200
-init nvm pool
-mempool alloc
+before newdb, dram space use: 0.0816765 GB
+1 keys bulkloaded (deleted? 1), root is 0, bfill 1.000000. lbt->check() start: 0, end: 0
+init lbtree wrapper
+Start loading ....
+[Metic-Load]: Load 2000000: cost 2.7017s, iops 740274 .
+Start Testing Uniform Workload
+wrong get: 0
+[Metic-Operate]: Operate 10000000 theta 0: cost 5.99381s, iops 1.66839e+06 .
+dram space use: 0.743313 GB
+Start Testing Zipfian Workload
+wrong get: 0
+[Metic-Operate]: Operate 10000000 theta: 0.6, cost 5.78413s, iops 1.72887e+06 .
+dram space use: 1.33959 GB
+wrong get: 0
+[Metic-Operate]: Operate 10000000 theta: 0.7, cost 5.54492s, iops 1.80345e+06 .
+dram space use: 1.93553 GB
+wrong get: 0
+[Metic-Operate]: Operate 10000000 theta: 0.8, cost 5.06063s, iops 1.97604e+06 .
+dram space use: 2.53147 GB
+wrong get: 0
+[Metic-Operate]: Operate 10000000 theta: 0.9, cost 4.41008s, iops 2.26753e+06 .
+dram space use: 3.12766 GB
+wrong get: 0
+[Metic-Operate]: Operate 10000000 theta: 0.95, cost 4.0039s, iops 2.49756e+06 .
+dram space use: 3.7236 GB
+wrong get: 0
+[Metic-Operate]: Operate 10000000 theta: 0.99, cost 3.65996s, iops 2.73227e+06 .
+dram space use: 4.31979 GB

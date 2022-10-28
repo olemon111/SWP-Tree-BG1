@@ -78,7 +78,7 @@
 #define PAGE_SIZE (4 * KB)
 
 // obtain the starting address of a cache line
-#define lbtgetline(addr) \
+#define lbt_getline(addr) \
      (((unsigned long long)(addr)) & (~(unsigned long long)(CACHE_LINE_SIZE - 1)))
 
 // check if address is aligned at line boundary
@@ -237,7 +237,7 @@
 /* ---------------------------------------------------------------------- */
 
 // for non leaf node
-static void inline NODE_PREF(register void *bbp)
+static void inline NODE_PREF(void *bbp)
 {
      pref(*((char *)bbp));
 #if NONLEAF_LINE_NUM >= 2
@@ -338,7 +338,7 @@ static void inline NODE_PREF(register void *bbp)
 #endif
 }
 
-static void inline LEAF_PREF(register void *bbp)
+static void inline LEAF_PREF(void *bbp)
 {
      pref(*((char *)bbp));
 #if LEAF_LINE_NUM >= 2
