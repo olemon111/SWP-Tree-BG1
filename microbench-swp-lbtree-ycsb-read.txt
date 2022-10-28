@@ -1,0 +1,26 @@
+2022年 10月 28日 星期五 15:08:37 CST
+THREAD NUMBER:         1
+LOAD_SIZE:             2000000
+PUT_SIZE:              0
+GET_SIZE:              10000000
+DB  name:              lbtree
+Loads type:            1
+Theta:                 0.99
+Use: generate_random_ycsb
+generate 2000000 values in 665 ms (3.00752 M values/s)
+0: 1710708252
+1: 768711222
+2: 1903148469
+3: 18446744072272058872
+4: 18446744073615220345
+5: 733723600
+6: 846403752
+7: 627154241
+8: 18446744073193982354
+9: 1914274036
+------------------------------
+before newdb, dram space use: 0.0809135 GB
+before init lbtree
+NVM mapping address: 0x7faf16400000, size: 209715200
+init nvm pool
+mempool alloc

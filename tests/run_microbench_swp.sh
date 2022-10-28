@@ -23,29 +23,29 @@ function Run() {
     # echo "${BUILDDIR}/microbench_swp --dbname ${dbname} --load-size ${loadnum} "\
     # "--put-size ${0} --get-size ${opnum} --workload ${WorkLoad} --loadstype 1 --theta ${theta} -t $thread"
 
-    # # Read
-    # rm -f /mnt/pmem1/lbl/*
-    # Loadname="ycsb-read"
-    # date | tee microbench-swp-${dbname}-${Loadname}.txt
-    # # gdb --args \
-    # ${BUILDDIR}/microbench_swp --dbname ${dbname} --load-size ${loadnum} \
-    # --put-size 0 --get-size ${opnum} \
-    # --loadstype 1 --theta ${theta} -t $thread | tee -a microbench-swp-${dbname}-${Loadname}.txt
-
-    # echo "${BUILDDIR}/microbench_swp --dbname ${dbname} --load-size ${loadnum} "\
-    # "--put-size 0 --get-size ${opnum} --loadstype 1 --theta ${theta} -t $thread"
-
-    # Write
+    # Read
     rm -f /mnt/pmem1/lbl/*
-    Loadname="ycsb-write"
+    Loadname="ycsb-read"
     date | tee microbench-swp-${dbname}-${Loadname}.txt
     # gdb --args \
     ${BUILDDIR}/microbench_swp --dbname ${dbname} --load-size ${loadnum} \
-    --put-size ${opnum} --get-size 0 \
+    --put-size 0 --get-size ${opnum} \
     --loadstype 1 --theta ${theta} -t $thread | tee -a microbench-swp-${dbname}-${Loadname}.txt
 
     echo "${BUILDDIR}/microbench_swp --dbname ${dbname} --load-size ${loadnum} "\
-    "--put-size ${opnum} --get-size 0 --loadstype 1 --theta ${theta} -t $thread"
+    "--put-size 0 --get-size ${opnum} --loadstype 1 --theta ${theta} -t $thread"
+
+    # # Write
+    # rm -f /mnt/pmem1/lbl/*
+    # Loadname="ycsb-write"
+    # date | tee microbench-swp-${dbname}-${Loadname}.txt
+    # # gdb --args \
+    # ${BUILDDIR}/microbench_swp --dbname ${dbname} --load-size ${loadnum} \
+    # --put-size ${opnum} --get-size 0 \
+    # --loadstype 1 --theta ${theta} -t $thread | tee -a microbench-swp-${dbname}-${Loadname}.txt
+
+    # echo "${BUILDDIR}/microbench_swp --dbname ${dbname} --load-size ${loadnum} "\
+    # "--put-size ${opnum} --get-size 0 --loadstype 1 --theta ${theta} -t $thread"
 }
 
 function run_all() {
@@ -90,10 +90,6 @@ function main() {
     fi 
 }
 
-main fastfair 2000000 10000000 0 1 0.99
+# main fastfair 2000000 10000000 0 1 0.99
 # main apex 2000000 10000000 0 1 0.99
-# main apex 2000000 10000000 0 1 0.99
-# main apex 16 10000000 0 1 0.99
-# main apex 20 10000000 0 1 0.99
-# main lbtree 2000000 10000000 0 1
-# main all 2000000 10000000 0 1
+main lbtree 2000000 10000000 0 1 0.99

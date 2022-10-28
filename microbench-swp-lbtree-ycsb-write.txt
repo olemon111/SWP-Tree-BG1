@@ -1,0 +1,23 @@
+2022年 10月 28日 星期五 00:54:29 CST
+THREAD NUMBER:         1
+LOAD_SIZE:             2000000
+PUT_SIZE:              10000000
+GET_SIZE:              0
+DB  name:              lbtree
+Loads type:            1
+Theta:                 0.99
+Use: generate_random_ycsb
+generate 2000000 values in 704 ms (2.84091 M values/s)
+0: 2079034949
+1: 579525787
+2: 18446744072017711320
+3: 1907637666
+4: 1364637179
+5: 18446744071971667140
+6: 729522969
+7: 165720122
+8: 18446744072054256602
+9: 749879650
+------------------------------
+before newdb, dram space use: 0.080761 GB
+before init lbtree

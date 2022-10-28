@@ -14,60 +14,66 @@
  * allocation requests from this memory pool.  Freed btree nodes will be
  * appended into a linked list for future reuse.
  *
- * The memory pool is divided into segments.  Each worker thread has its own 
+ * The memory pool is divided into segments.  Each worker thread has its own
  * segment of the memory pool to reduce contention.
  */
 #include "lbtree/mempool.h"
 
-thread_local int worker_id= -1;  /* in Thread Local Storage */
+thread_local int worker_id = -1; /* in Thread Local Storage */
 
-threadMemPools   the_thread_mempools;
-threadNVMPools   the_thread_nvmpools;
+threadMemPools the_thread_mempools;
+threadNVMPools the_thread_nvmpools;
 
 /* -------------------------------------------------------------- */
-void threadMemPools::init (int num_workers, long long size, long long align)
+void threadMemPools::init(int num_workers, long long size, long long align)
 {
-    assert((num_workers>0)&&(size>0)&&(align>0)&((align&(align-1))==0));
+    assert((num_workers > 0) && (size > 0) && (align > 0) & ((align & (align - 1)) == 0));
 
     // 1. allocate memory
-    tm_num_workers= num_workers;
-    tm_pools= new mempool[tm_num_workers];
+    tm_num_workers = num_workers;
+    tm_pools = new mempool[tm_num_workers];
 
-    long long size_per_pool= (size/tm_num_workers/align)*align;
-    size_per_pool= (size_per_pool<MB ? MB:size_per_pool);
-    tm_size= size_per_pool*tm_num_workers;
+    long long size_per_pool = (size / tm_num_workers / align) * align;
+    size_per_pool = (size_per_pool < MB ? MB : size_per_pool);
+    tm_size = size_per_pool * tm_num_workers;
 
-    tm_buf= (char *)memalign (align, tm_size);
-    if (!tm_buf || !tm_pools) {
-	perror ("malloc"); exit (1);
+    tm_buf = (char *)memalign(align, tm_size);
+    if (!tm_buf || !tm_pools)
+    {
+        perror("malloc");
+        exit(1);
     }
 
     // 2. initialize memory pools
     char name[80];
-    for (int i=0; i<tm_num_workers; i++) {
-       sprintf(name, "DRAM pool %d", i);
-       tm_pools[i].init(tm_buf+i*size_per_pool, size_per_pool, align, strdup(name));
+    for (int i = 0; i < tm_num_workers; i++)
+    {
+        sprintf(name, "DRAM pool %d", i);
+        tm_pools[i].init(tm_buf + i * size_per_pool, size_per_pool, align, strdup(name));
     }
 
     // 3. touch every page to make sure that they are allocated
-    for(long long i = 0; i<tm_size; i+=4096) {
+    for (long long i = 0; i < tm_size; i += 4096)
+    {
         tm_buf[i] = 1;
     }
 }
 
 void threadMemPools::print(void)
 {
-    if (tm_pools==NULL) {
-      printf("Error: threadMemPools is not yet initialized!\n");
-      return;
+    if (tm_pools == NULL)
+    {
+        printf("Error: threadMemPools is not yet initialized!\n");
+        return;
     }
 
     printf("threadMemPools\n");
     printf("--------------------\n");
-    for (int i=0; i<tm_num_workers; i++) {
-       tm_pools[i].print_params();
-       tm_pools[i].print_free_nodes();
-       printf("--------------------\n");
+    for (int i = 0; i < tm_num_workers; i++)
+    {
+        tm_pools[i].print_params();
+        tm_pools[i].print_free_nodes();
+        printf("--------------------\n");
     }
 }
 
@@ -75,8 +81,9 @@ void threadMemPools::print_usage(void)
 {
     printf("threadMemPools\n");
     printf("--------------------\n");
-    for (int i=0; i<tm_num_workers; i++) {
-       tm_pools[i].print_usage();
+    for (int i = 0; i < tm_num_workers; i++)
+    {
+        tm_pools[i].print_usage();
     }
     printf("--------------------\n");
 }
@@ -84,49 +91,53 @@ void threadMemPools::print_usage(void)
 /* -------------------------------------------------------------- */
 threadNVMPools::~threadNVMPools()
 {
-    if(tm_buf) {
+    if (tm_buf)
+    {
 #ifdef NVMPOOL_REAL
         pmem_unmap(tm_buf, tm_size);
-#else  // NVMPOOL_REAL not defined, use DRAM memory
+#else // NVMPOOL_REAL not defined, use DRAM memory
         free(tm_buf);
 #endif
-        tm_buf= NULL;
+        tm_buf = NULL;
     }
-    if(tm_pools) {
+    if (tm_pools)
+    {
         delete[] tm_pools;
-        tm_pools= NULL;
+        tm_pools = NULL;
     }
 }
 
 /**
  * get the sigbus signal
  */
-static void handleSigbus (int sig)
+static void handleSigbus(int sig)
 {
-    printf("SIGBUS %d is received\n",sig);
+    printf("SIGBUS %d is received\n", sig);
     _exit(0);
 }
 
-
-void threadNVMPools::init (int num_workers, const char * nvm_file, long long size)
+void threadNVMPools::init(int num_workers, const char *nvm_file, long long size)
 {
     // map_addr must be 4KB aligned, size must be multiple of 4KB
-    assert((num_workers>0)&&(size>0)&&(size % 4096 == 0));
+    assert((num_workers > 0) && (size > 0) && (size % 4096 == 0));
 
     // set sigbus handler
     signal(SIGBUS, handleSigbus);
 
     // 1. allocate memory
-    tm_num_workers= num_workers;
-    tm_pools= new mempool[tm_num_workers];
-    if (!tm_pools) { perror ("malloc"); exit (1); }
+    tm_num_workers = num_workers;
+    tm_pools = new mempool[tm_num_workers];
+    if (!tm_pools)
+    {
+        perror("malloc");
+        exit(1);
+    }
 
-    tn_nvm_file= nvm_file;
+    tn_nvm_file = nvm_file;
 
-    long long size_per_pool= (size/tm_num_workers/4096)*4096;
-    size_per_pool= (size_per_pool<MB ? MB:size_per_pool);
-    tm_size= size_per_pool*tm_num_workers;
-
+    long long size_per_pool = (size / tm_num_workers / 4096) * 4096;
+    size_per_pool = (size_per_pool < MB ? MB : size_per_pool);
+    tm_size = size_per_pool * tm_num_workers;
 
 #ifdef NVMPOOL_REAL
 
@@ -135,55 +146,62 @@ void threadNVMPools::init (int num_workers, const char * nvm_file, long long siz
     int is_pmem = false;
     size_t mapped_len = tm_size;
 
-    tm_buf= (char *) pmem_map_file(tn_nvm_file, tm_size, PMEM_FILE_CREATE, 0666, &mapped_len, &is_pmem);
-    if (tm_buf == NULL) {
-       perror ("pmem_map_file");
-       exit(1);
+    tm_buf = (char *)pmem_map_file(tn_nvm_file, tm_size, PMEM_FILE_CREATE, 0666, &mapped_len, &is_pmem);
+    if (tm_buf == NULL)
+    {
+        perror("pmem_map_file");
+        exit(1);
     }
 
     printf("NVM mapping address: %p, size: %ld\n", tm_buf, mapped_len);
-    if (tm_size != mapped_len) {
-       fprintf(stderr, "Error: cannot map %lld bytes\n", tm_size);
-       pmem_unmap(tm_buf, mapped_len);
-       exit(1);
+    if (tm_size != mapped_len)
+    {
+        fprintf(stderr, "Error: cannot map %lld bytes\n", tm_size);
+        pmem_unmap(tm_buf, mapped_len);
+        exit(1);
     }
 
-#else  // NVMPOOL_REAL not defined, use DRAM memory
+#else // NVMPOOL_REAL not defined, use DRAM memory
 
-    tm_buf= (char *)memalign (4096, tm_size);
-    if (!tm_buf) {
-        perror ("malloc"); exit (1);
+    tm_buf = (char *)memalign(4096, tm_size);
+    if (!tm_buf)
+    {
+        perror("malloc");
+        exit(1);
     }
 
 #endif // NVMPOOL_REAL
 
     // 2. initialize NVM memory pools
     char name[80];
-    for (int i=0; i<tm_num_workers; i++) {
-       sprintf(name, "NVM pool %d", i);
-       tm_pools[i].init(tm_buf+i*size_per_pool, size_per_pool, 4096, strdup(name));
+    for (int i = 0; i < tm_num_workers; i++)
+    {
+        sprintf(name, "NVM pool %d", i);
+        tm_pools[i].init(tm_buf + i * size_per_pool, size_per_pool, 4096, strdup(name));
     }
 
     // 3. touch every page to make sure that they are allocated
-    for(long long i = 0; i<tm_size; i+=4096) {
-        tm_buf[i] = 1;  // XXX: need a special signature
+    for (long long i = 0; i < tm_size; i += 4096)
+    {
+        tm_buf[i] = 1; // XXX: need a special signature
     }
 }
 
-
 void threadNVMPools::print(void)
 {
-    if (tm_pools==NULL) {
-      printf("Error: threadNVMPools is not yet initialized!\n");
-      return;
+    if (tm_pools == NULL)
+    {
+        printf("Error: threadNVMPools is not yet initialized!\n");
+        return;
     }
 
     printf("threadNVMPools\n");
     printf("--------------------\n");
-    for (int i=0; i<tm_num_workers; i++) {
-       tm_pools[i].print_params();
-       tm_pools[i].print_free_nodes();
-       printf("--------------------\n");
+    for (int i = 0; i < tm_num_workers; i++)
+    {
+        tm_pools[i].print_params();
+        tm_pools[i].print_free_nodes();
+        printf("--------------------\n");
     }
 }
 
@@ -191,8 +209,9 @@ void threadNVMPools::print_usage(void)
 {
     printf("threadNVMPools\n");
     printf("--------------------\n");
-    for (int i=0; i<tm_num_workers; i++) {
-       tm_pools[i].print_usage();
+    for (int i = 0; i < tm_num_workers; i++)
+    {
+        tm_pools[i].print_usage();
     }
     printf("--------------------\n");
 }
@@ -200,10 +219,10 @@ void threadNVMPools::print_usage(void)
 #if 0
 /* test */
 
-#define mempool_alloc       the_mempool.alloc
-#define mempool_free        the_mempool.free
-#define mempool_alloc_node  the_mempool.alloc_node
-#define mempool_free_node   the_mempool.free_node
+#define mempool_alloc the_mempool.alloc
+#define mempool_free the_mempool.free
+#define mempool_alloc_node the_mempool.alloc_node
+#define mempool_free_node the_mempool.free_node
 
 
 /* single thread small pool */

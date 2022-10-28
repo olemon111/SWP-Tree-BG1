@@ -165,22 +165,46 @@ namespace dbInter
     virtual ~LBTreeDB() {}
     void Init()
     {
-      NVM::data_init();
-      char *nvm_addr = (char *)nvmpool_alloc(4 * KB);
-      tree_ = new lbtree(nvm_addr, false);
-      NVM::pmem_size = 0;
+      // cout << "before init lbtree" << endl;
+      // initUseful();
+      // // initialize mempool per worker thread
+      // worker_thread_num = 1;
+      // worker_id = 0; // the main thread will use worker[0]'s mem/nvm pool
+      // the_thread_mempools.init(worker_thread_num, 50 * MB, 4096);
+      // // initialize nvm pool and log per worker thread
+      // nvm_file_name = "/mnt/pmem1/lbl/lbtree-pool.obj";
+      // // const uint64_t pool_size = 40UL * 1024 * 1024 * 1024;
+      // const uint64_t pool_size = 200 * MB;
+      // the_thread_nvmpools.init(worker_thread_num, nvm_file_name, pool_size);
+      // cout << "init nvm pool" << endl;
+      // // allocate a 4KB page for the tree in worker 0's pool
+      // // void *nvm_addr = nvmpool_alloc(0);
+      // char *nvm_addr = (char *)nvmpool_alloc(256);
+      // // char *nvm_addr = (char *)nvmpool_alloc(4 * KB);
+      // cout << "alloc 4kb" << endl;
+      // // the_treep = initTree(nvm_addr, false);
+      // tree_ = new lbtree(nvm_addr, false);
+      // the_treep = tree_;
+      // cout << "init lbtree" << endl;
+      // // log may not be necessary for some tree implementations
+      // // For simplicity, we just initialize logs.  This cost is low.
+      // nvmLogInit(worker_thread_num);
     }
 
     void Info()
     {
-      std::cout << "NVM WRITE : " << NVM::pmem_size << std::endl;
-      NVM::show_stat();
       tree_->PrintInfo();
     }
 
     void Close()
     {
     }
+
+    void Bulk_load(const std::pair<uint64_t, uint64_t> data[], int size)
+    {
+      // tree_->bulkload(size, );
+    }
+
     int Put(uint64_t key, uint64_t value)
     {
       tree_->insert(key, (void *)value);
@@ -211,7 +235,6 @@ namespace dbInter
     }
     void PrintStatic()
     {
-      NVM::show_stat();
       tree_->PrintInfo();
     }
 
