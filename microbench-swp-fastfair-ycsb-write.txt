@@ -1,4 +1,4 @@
-2022年 10月 28日 星期五 00:32:31 CST
+2022年 10月 28日 星期五 23:07:33 CST
 THREAD NUMBER:         1
 LOAD_SIZE:             2000000
 PUT_SIZE:              10000000
@@ -7,21 +7,43 @@ DB  name:              fastfair
 Loads type:            1
 Theta:                 0.99
 Use: generate_random_ycsb
-generate 2000000 values in 731 ms (2.73598 M values/s)
-0: 864931559
-1: 617132288
-2: 1368210924
-3: 18446744073665602498
-4: 1813668564
-5: 18446744073206218607
-6: 18446744073627676534
-7: 2073659187
-8: 18446744072448967184
-9: 18446744072259084180
+generate 2000000 values in 625 ms (3.2 M values/s)
+0: 18446744073039756302
+1: 18446744071806505822
+2: 18446744071978868966
+3: 18446744072491684795
+4: 392795603
+5: 1648738122
+6: 18446744071570467131
+7: 18446744072661675625
+8: 18446744073400200221
+9: 401869548
 ------------------------------
-before newdb, dram space use: 0.0805702 GB
+before newdb, dram space use: 0.0818214 GB
 before init btree
-before create new page
-[Fast-Fair]: root is 0x557c3bff42b0, btree is 0x557c3ef003c0.
-init db
+init fastfair db
 Start loading ....
+[Metic-Load]: Load 2000000: cost 2.34604s, iops 852501 .
+Start Testing Uniform Workload
+wrong get: 0
+[Metic-Operate]: Operate 10000000 theta : - cost 33.9899s, iops 294205 .
+dram space use: 0.0531235 GB
+Start Testing Zipfian Workload
+wrong get: 0
+[Metic-Operate]: Operate 10000000 theta: 0.6, cost 16.4293s, iops 608668 .
+dram space use: 0.0536003 GB
+wrong get: 0
+[Metic-Operate]: Operate 10000000 theta: 0.7, cost 18.5623s, iops 538725 .
+dram space use: 0.0536003 GB
+wrong get: 0
+[Metic-Operate]: Operate 10000000 theta: 0.8, cost 18.6642s, iops 535785 .
+dram space use: 0.0536003 GB
+wrong get: 0
+[Metic-Operate]: Operate 10000000 theta: 0.9, cost 17.4723s, iops 572336 .
+dram space use: 0.0536003 GB
+wrong get: 0
+[Metic-Operate]: Operate 10000000 theta: 0.95, cost 16.7142s, iops 598293 .
+dram space use: 0.0536003 GB
+wrong get: 0
+[Metic-Operate]: Operate 10000000 theta: 0.99, cost 15.9456s, iops 627134 .
+dram space use: 0.0536003 GB

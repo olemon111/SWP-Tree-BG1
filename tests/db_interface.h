@@ -15,8 +15,13 @@
 #include "random.h"
 
 using combotree::ComboTree;
-using FastFair::btree;
+// using FastFair::btree;
 using namespace std;
+
+/*
+ *file_exists -- checks if file exists
+ */
+static inline int file_exists(char const *file) { return access(file, F_OK); }
 
 namespace KV
 {
@@ -97,23 +102,35 @@ namespace dbInter
   class FastFairDb : public ycsbc::KvDB
   {
   public:
-    FastFairDb() : tree_(nullptr) {}
-    FastFairDb(btree *tree) : tree_(tree) {}
-    virtual ~FastFairDb() {}
+    FastFairDb() : btree_(TOID_NULL(btree)) {}
+    FastFairDb(TOID(btree) tree) : btree_(tree) {}
+    virtual ~FastFairDb()
+    {
+      pmemobj_close(pop_);
+    }
     void Init()
     {
-      NVM::data_init();
-      std::cout << "before init btree" << std::endl;
-      tree_ = new btree();
-      std::cout << "init db" << std::endl;
-      NVM::pmem_size = 0;
+      char *persistent_path = "/mnt/pmem1/lbl/fastfair-pool.obj";
+      cout << "before init btree" << endl;
+      btree_ = TOID_NULL(btree);
+      if (file_exists(persistent_path) != 0)
+      {
+        static const uint64_t pool_size = 40UL * 1024 * 1024 * 1024; // 8000000000
+        pop_ = pmemobj_create(persistent_path, "btree", pool_size, 0666);
+        btree_ = POBJ_ROOT(pop_, btree);
+        D_RW(btree_)->constructor(pop_);
+      }
+      else
+      {
+        pop_ = pmemobj_open(persistent_path, "btree");
+        btree_ = POBJ_ROOT(pop_, btree);
+      }
+      cout << "init fastfair db" << endl;
     }
 
     void Info()
     {
-      std::cout << "NVM WRITE : " << NVM::pmem_size << std::endl;
-      NVM::show_stat();
-      tree_->PrintInfo();
+      // tree_->PrintInfo();
     }
 
     void Close()
@@ -121,42 +138,43 @@ namespace dbInter
     }
     int Put(uint64_t key, uint64_t value)
     {
-      tree_->btree_insert(key, (char *)value);
+      D_RW(btree_)->btree_insert(key, (char *)value);
       return 1;
     }
     int Get(uint64_t key, uint64_t &value)
     {
-      value = (uint64_t)tree_->btree_search(key);
+      value = (uint64_t)D_RW(btree_)->btree_search(key);
       return 1;
     }
     int Update(uint64_t key, uint64_t value)
     {
-      tree_->btree_delete(key);
-      tree_->btree_insert(key, (char *)value);
+      D_RW(btree_)->btree_delete(key);
+      D_RW(btree_)->btree_insert(key, (char *)value);
       return 1;
     }
 
     int Delete(uint64_t key)
     {
-      tree_->btree_delete(key);
+      D_RW(btree_)->btree_delete(key);
       return 1;
     }
 
     int Scan(uint64_t start_key, int len, std::vector<std::pair<uint64_t, uint64_t>> &results)
     {
-      tree_->btree_search_range(start_key, UINT64_MAX, results, len);
+      // tree_->btree_search_range(start_key, UINT64_MAX, results, len);
       return 1;
     }
     void PrintStatic()
     {
-      NVM::show_stat();
-      tree_->PrintInfo();
+      // tree_->PrintInfo();
     }
 
   private:
-    btree *tree_;
+    TOID(btree)
+    btree_;
+    PMEMobjpool *pop_;
   };
-
+  
   class LBTreeDB : public ycsbc::KvDB
   {
   public:
@@ -246,90 +264,6 @@ namespace dbInter
   private:
     lbtree_wrapper *tree_;
   };
-  // class LBTreeDB : public ycsbc::KvDB
-  // {
-  // public:
-  //   LBTreeDB() : tree_(nullptr) {}
-  //   LBTreeDB(lbtree *tree) : tree_(tree) {}
-  //   virtual ~LBTreeDB() {}
-  //   void Init()
-  //   {
-  //     // cout << "before init lbtree" << endl;
-  //     // initUseful();
-  //     // // initialize mempool per worker thread
-  //     // worker_thread_num = 1;
-  //     // worker_id = 0; // the main thread will use worker[0]'s mem/nvm pool
-  //     // the_thread_mempools.init(worker_thread_num, 50 * MB, 4096);
-  //     // // initialize nvm pool and log per worker thread
-  //     // nvm_file_name = "/mnt/pmem1/lbl/lbtree-pool.obj";
-  //     // // const uint64_t pool_size = 40UL * 1024 * 1024 * 1024;
-  //     // const uint64_t pool_size = 200 * MB;
-  //     // the_thread_nvmpools.init(worker_thread_num, nvm_file_name, pool_size);
-  //     // cout << "init nvm pool" << endl;
-  //     // // allocate a 4KB page for the tree in worker 0's pool
-  //     // // void *nvm_addr = nvmpool_alloc(0);
-  //     // char *nvm_addr = (char *)nvmpool_alloc(256);
-  //     // // char *nvm_addr = (char *)nvmpool_alloc(4 * KB);
-  //     // cout << "alloc 4kb" << endl;
-  //     // // the_treep = initTree(nvm_addr, false);
-  //     // tree_ = new lbtree(nvm_addr, false);
-  //     // the_treep = tree_;
-  //     // cout << "init lbtree" << endl;
-  //     // // log may not be necessary for some tree implementations
-  //     // // For simplicity, we just initialize logs.  This cost is low.
-  //     // nvmLogInit(worker_thread_num);
-  //   }
-
-  //   void Info()
-  //   {
-  //     // tree_->PrintInfo();
-  //   }
-
-  //   void Close()
-  //   {
-  //   }
-
-  //   void Bulk_load(const std::pair<uint64_t, uint64_t> data[], int size)
-  //   {
-  //     // tree_->bulkload(size, );
-  //   }
-
-  //   int Put(uint64_t key, uint64_t value)
-  //   {
-  //     tree_->insert(key, (void *)value);
-  //     return 1;
-  //   }
-  //   int Get(uint64_t key, uint64_t &value)
-  //   {
-  //     int pos;
-  //     value = (uint64_t)tree_->lookup(key, &pos);
-  //     return 1;
-  //   }
-  //   int Update(uint64_t key, uint64_t value)
-  //   {
-  //     tree_->del(key);
-  //     tree_->insert(key, (void *)value);
-  //     return 1;
-  //   }
-
-  //   int Delete(uint64_t key)
-  //   {
-  //     tree_->del(key);
-  //     return 1;
-  //   }
-
-  //   int Scan(uint64_t start_key, int len, std::vector<std::pair<uint64_t, uint64_t>> &results)
-  //   {
-  //     return 1;
-  //   }
-  //   void PrintStatic()
-  //   {
-  //     // tree_->PrintInfo();
-  //   }
-
-  // private:
-  //   lbtree *tree_;
-  // };
 
   class ApexDB : public ycsbc::KvDB
   {

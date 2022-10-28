@@ -269,25 +269,7 @@ void load()
          << "cost " << us_times / 1000000.0 << "s, "
          << "iops " << (double)(LOAD_SIZE) / (double)us_times * 1000000.0 << " ." << endl;
     load_pos = LOAD_SIZE;
-    // {
-    //     // Load
-    //     cout << "Start loading ...." << endl;
-    //     util::FastRandom ranny(18);
-    //     timer.Record("start");
-    //     for (load_pos = load_size; load_pos < LOAD_SIZE; load_pos++)
-    //     {
-    //         cout << load_pos << ": " << data_base[load_pos] << endl;
-    //         db->Put(data_base[load_pos], (uint64_t)(data_base[load_pos] + 1));
-    //     }
-    //     std::cerr << endl;
-
-    //     timer.Record("stop");
-    //     us_times = timer.Microsecond("stop", "start");
-    //     cout << "[Metic-Load]: Load " << LOAD_SIZE << ": "
-    //               << "cost " << us_times / 1000000.0 << "s, "
-    //               << "iops " << (double)(LOAD_SIZE) / (double)us_times * 1000000.0 << " ." << endl;
-    // }
-    sleep(40);
+    // sleep(40);
 }
 
 void test_uniform()
@@ -314,7 +296,6 @@ void test_uniform()
         // cout << "get: " << data_base[rand_pos[i]] << endl;
         if (value != data_base[rand_pos[i]] + 1)
         {
-            // cout << "value: " << value << endl;
             wrong_get++;
         }
     }
@@ -327,7 +308,7 @@ void test_uniform()
     timer.Record("stop");
     cout << "wrong get: " << wrong_get << endl;
     us_times = timer.Microsecond("stop", "start");
-    cout << "[Metic-Operate]: Operate " << tot << " theta " << 0 << ": "
+    cout << "[Metic-Operate]: Operate " << tot << " theta : - "
          << "cost " << us_times / 1000000.0 << "s, "
          << "iops " << (double)(tot) / (double)us_times * 1000000.0 << " ." << endl;
     cout << "dram space use: " << (physical_memory_used_by_process() - init_dram_space_use) / 1024.0 / 1024.0 << " GB" << endl;
