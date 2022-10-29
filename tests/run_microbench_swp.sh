@@ -80,13 +80,13 @@ function main() {
     fi 
 }
 
-main fastfair 2000000 10000000 0 1 0
+# main fastfair 2000000 10000000 0 1 0
 # main apex 2000000 10000000 0 1 0
 # main lbtree 2000000 10000000 0 1 0
 # main all 2000000 10000000 0 1 0
 # # reverse
 # main fastfair 2000000 10000000 0 1 1
 # main apex 2000000 10000000 0 1 1
-# main lbtree 2000000 10000000 0 1 1
+main lbtree 2000000 10000000 0 1 1
 # main fastfair 2000000 10000000 0 1 1
 # main all 2000000 10000000 0 1 1

@@ -6,7 +6,6 @@
 #include <sys/types.h>
 
 // #define DEBUG_MSG
-#define PMEM 1
 
 auto num_bulkloaded = 1ll;
 float bfill = 1.0;
