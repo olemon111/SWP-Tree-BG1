@@ -174,7 +174,7 @@ namespace dbInter
     btree_;
     PMEMobjpool *pop_;
   };
-  
+
   class LBTreeDB : public ycsbc::KvDB
   {
   public:
@@ -187,6 +187,8 @@ namespace dbInter
       size_t key_size_ = 0;
       size_t pool_size_ = ((size_t)(40UL * 1024 * 1024 * 1024));
       const char *pool_path_ = "/mnt/pmem1/lbl/lbtree-pool.obj";
+      kp = new char[8];
+      vp = new char[8];
 
       initUseful();
       worker_id = 0;
@@ -216,34 +218,25 @@ namespace dbInter
     }
     int Put(uint64_t key, uint64_t value)
     {
-      char *kp = new char[8], *vp = new char[8];
       memcpy(kp, &key, sizeof(key));
       memcpy(vp, &value, sizeof(value));
       tree_->insert(kp, sizeof(key), vp, sizeof(value));
-      delete kp, vp;
-      kp = NULL, vp = NULL;
       return 1;
     }
     int Get(uint64_t key, uint64_t &value)
     {
-      char *kp = new char[8], *vp = new char[8];
       memcpy(kp, &key, sizeof(key));
       tree_->find(kp, sizeof(key), vp);
       uint64_t res;
       memcpy(&res, vp, sizeof(value));
       value = res;
-      delete kp, vp;
-      kp = NULL, vp = NULL;
       return 1;
     }
     int Update(uint64_t key, uint64_t value)
     {
-      char *kp = new char[8], *vp = new char[8];
       memcpy(kp, &key, sizeof(key));
       memcpy(vp, &value, sizeof(value));
       tree_->update(kp, sizeof(key), vp, sizeof(value));
-      delete kp, vp;
-      kp = NULL, vp = NULL;
       return 1;
     }
     int Delete(uint64_t key)
@@ -263,6 +256,7 @@ namespace dbInter
 
   private:
     lbtree_wrapper *tree_;
+    char *kp, *vp;
   };
 
   class ApexDB : public ycsbc::KvDB

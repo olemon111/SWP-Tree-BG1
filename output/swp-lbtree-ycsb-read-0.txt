@@ -1,4 +1,4 @@
-2022年 10月 29日 星期六 16:51:06 CST
+2022年 10月 29日 星期六 23:05:12 CST
 THREAD NUMBER:         1
 LOAD_SIZE:             2000000
 PUT_SIZE:              0
@@ -6,33 +6,33 @@ GET_SIZE:              10000000
 DB  name:              lbtree
 Loads type:            3
 Reverse:               0
-read 2000000 values from /home/lbl/dataset/generate_random_ycsb.dat in 19 ms (105.263 M values/s)
-before newdb, dram space use: 0.021904 GB
+read 2000000 values from /home/lbl/dataset/generate_random_ycsb.dat in 18 ms (111.111 M values/s)
+before newdb, dram space use: 0.0215988 GB
 init lbtree wrapper
 Start loading ....
-[Metic-Load]: Load 2000000: cost 3.74146s, kops/s: 534.551 .
+[Metic-Load]: Load 2000000: cost 3.44239s, kops/s: 580.991 .
 ------------------------------
 Start Testing Uniform Workload
 wrong get: 0
-[Metic-Operate]: Operate 10000000, cost 6.17674s, kops/s: 1618.98 .
-dram space use: 0.445793 GB
+[Metic-Operate]: Operate 10000000, cost 5.26378s, kops/s: 1899.78 .
+dram space use: 0.0920105 GB
 ------------------------------
 Start Testing Zipfian Workload
 wrong get: 0
-[Metic-Operate]: Operate 10000000 theta: 0.6, cost 5.88319s, kops/s: 1699.76 .
-dram space use: 0.744026 GB
+[Metic-Operate]: Operate 10000000 theta: 0.6, cost 4.92252s, kops/s: 2031.48 .
+dram space use: 0.0922318 GB
 wrong get: 0
-[Metic-Operate]: Operate 10000000 theta: 0.7, cost 5.62248s, kops/s: 1778.57 .
-dram space use: 1.04189 GB
+[Metic-Operate]: Operate 10000000 theta: 0.7, cost 4.61416s, kops/s: 2167.24 .
+dram space use: 0.0924454 GB
 wrong get: 0
-[Metic-Operate]: Operate 10000000 theta: 0.8, cost 5.06856s, kops/s: 1972.95 .
-dram space use: 1.33991 GB
+[Metic-Operate]: Operate 10000000 theta: 0.8, cost 4.12623s, kops/s: 2423.52 .
+dram space use: 0.0924454 GB
 wrong get: 0
-[Metic-Operate]: Operate 10000000 theta: 0.9, cost 4.28531s, kops/s: 2333.55 .
-dram space use: 1.63793 GB
+[Metic-Operate]: Operate 10000000 theta: 0.9, cost 3.42725s, kops/s: 2917.79 .
+dram space use: 0.0924454 GB
 wrong get: 0
-[Metic-Operate]: Operate 10000000 theta: 0.95, cost 3.96348s, kops/s: 2523.04 .
-dram space use: 1.93596 GB
+[Metic-Operate]: Operate 10000000 theta: 0.95, cost 3.02023s, kops/s: 3311.01 .
+dram space use: 0.0924454 GB
 wrong get: 0
-[Metic-Operate]: Operate 10000000 theta: 0.99, cost 3.46947s, kops/s: 2882.29 .
-dram space use: 2.23398 GB
+[Metic-Operate]: Operate 10000000 theta: 0.99, cost 2.69927s, kops/s: 3704.71 .
+dram space use: 0.0924454 GB

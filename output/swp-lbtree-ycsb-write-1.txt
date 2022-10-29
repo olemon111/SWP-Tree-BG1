@@ -1,4 +1,4 @@
-2022年 10月 29日 星期六 17:43:56 CST
+2022年 10月 30日 星期日 00:00:21 CST
 THREAD NUMBER:         1
 LOAD_SIZE:             2000000
 PUT_SIZE:              10000000
@@ -7,32 +7,32 @@ DB  name:              lbtree
 Loads type:            3
 Reverse:               1
 read 2000000 values from /home/lbl/dataset/generate_random_ycsb.dat in 16 ms (125 M values/s)
-before newdb, dram space use: 0.02174 GB
+before newdb, dram space use: 0.0217857 GB
 init lbtree wrapper
 Start loading ....
-[Metic-Load]: Load 2000000: cost 3.85403s, kops/s: 518.938 .
+[Metic-Load]: Load 2000000: cost 3.46074s, kops/s: 577.912 .
 ------------------------------
 Start Testing Zipfian Workload
 wrong get: 0
-[Metic-Operate]: Operate 10000000 theta: 0.99, cost 3.62651s, kops/s: 2757.47 .
-dram space use: 0.445995 GB
+[Metic-Operate]: Operate 10000000 theta: 0.99, cost 2.82051s, kops/s: 3545.46 .
+dram space use: 0.0923042 GB
 wrong get: 0
-[Metic-Operate]: Operate 10000000 theta: 0.95, cost 3.9962s, kops/s: 2502.37 .
-dram space use: 0.743855 GB
+[Metic-Operate]: Operate 10000000 theta: 0.95, cost 3.14267s, kops/s: 3182.01 .
+dram space use: 0.0925179 GB
 wrong get: 0
-[Metic-Operate]: Operate 10000000 theta: 0.9, cost 4.41996s, kops/s: 2262.47 .
-dram space use: 1.04188 GB
+[Metic-Operate]: Operate 10000000 theta: 0.9, cost 3.53098s, kops/s: 2832.07 .
+dram space use: 0.0925179 GB
 wrong get: 0
-[Metic-Operate]: Operate 10000000 theta: 0.8, cost 5.18881s, kops/s: 1927.22 .
-dram space use: 1.3399 GB
+[Metic-Operate]: Operate 10000000 theta: 0.8, cost 4.2306s, kops/s: 2363.73 .
+dram space use: 0.0925179 GB
 wrong get: 0
-[Metic-Operate]: Operate 10000000 theta: 0.7, cost 5.67984s, kops/s: 1760.61 .
-dram space use: 1.63792 GB
+[Metic-Operate]: Operate 10000000 theta: 0.7, cost 4.72809s, kops/s: 2115.02 .
+dram space use: 0.0925179 GB
 wrong get: 0
-[Metic-Operate]: Operate 10000000 theta: 0.6, cost 6.02713s, kops/s: 1659.16 .
-dram space use: 1.93595 GB
+[Metic-Operate]: Operate 10000000 theta: 0.6, cost 5.02984s, kops/s: 1988.14 .
+dram space use: 0.0925179 GB
 ------------------------------
 Start Testing Uniform Workload
 wrong get: 0
-[Metic-Operate]: Operate 10000000, cost 14.7618s, kops/s: 677.423 .
-dram space use: 2.23413 GB
+[Metic-Operate]: Operate 10000000, cost 12.2384s, kops/s: 817.102 .
+dram space use: 0.0923042 GB
