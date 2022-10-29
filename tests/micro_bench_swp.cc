@@ -20,6 +20,9 @@
 #include "nvm_alloc.h"
 #include "utils.h"
 
+#define REST true
+// #define REST false
+
 using combotree::ComboTree;
 using combotree::Random;
 using combotree::Timer;
@@ -39,8 +42,8 @@ int thread_num = 1;
 size_t LOAD_SIZE = 2000000;
 size_t PUT_SIZE = 10000000;
 size_t GET_SIZE = 10000000;
-int Loads_type = 0;
-float theta = 0.99;
+int Loads_type = 3;
+int Reverse = 0;
 
 std::vector<uint64_t> data_base;
 KvDB *db = nullptr;
@@ -234,6 +237,17 @@ void show_help(char *prog)
          << "    --help[-h]               show help" << endl;
 }
 
+void remove_cache()
+{
+    int size = 256 * 1024 * 1024;
+    char *garbage = new char[size];
+    for (int i = 0; i < size; ++i)
+        garbage[i] = i;
+    for (int i = 100; i < size; ++i)
+        garbage[i] += garbage[i - 100];
+    delete[] garbage;
+}
+
 void load()
 {
     cout << "Start loading ...." << endl;
@@ -267,14 +281,22 @@ void load()
     us_times = timer.Microsecond("stop", "start");
     cout << "[Metic-Load]: Load " << LOAD_SIZE << ": "
          << "cost " << us_times / 1000000.0 << "s, "
-         << "iops " << (double)(LOAD_SIZE) / (double)us_times * 1000000.0 << " ." << endl;
+         << "kops/s: " << (double)(LOAD_SIZE) / (double)us_times * 1000.0 << " ." << endl;
     load_pos = LOAD_SIZE;
-    // sleep(40);
+    if (REST)
+    {
+        sleep(40);
+    }
 }
 
 void test_uniform()
 {
-    // sleep(60);
+    if (REST)
+    {
+        sleep(60);
+        remove_cache();
+    }
+    cout << "------------------------------" << endl;
     cout << "Start Testing Uniform Workload" << endl;
     util::FastRandom ranny(18);
     vector<uint32_t> rand_pos;
@@ -308,23 +330,32 @@ void test_uniform()
     timer.Record("stop");
     cout << "wrong get: " << wrong_get << endl;
     us_times = timer.Microsecond("stop", "start");
-    cout << "[Metic-Operate]: Operate " << tot << " theta : - "
+    cout << "[Metic-Operate]: Operate " << tot << ", "
          << "cost " << us_times / 1000000.0 << "s, "
-         << "iops " << (double)(tot) / (double)us_times * 1000000.0 << " ." << endl;
+         << "kops/s: " << (double)(tot) / (double)us_times * 1000.0 << " ." << endl;
     cout << "dram space use: " << (physical_memory_used_by_process() - init_dram_space_use) / 1024.0 / 1024.0 << " GB" << endl;
 }
 
 void test_all_zipfian()
 {
+    cout << "------------------------------" << endl;
     cout << "Start Testing Zipfian Workload" << endl;
     util::FastRandom ranny(18);
     vector<uint32_t> rand_pos;
     size_t tot = GET_SIZE + PUT_SIZE;
     std::vector<float> thetas = {0.6, 0.7, 0.8, 0.9, 0.95, 0.99};
+    if (Reverse)
+    {
+        reverse(thetas.begin(), thetas.end());
+    }
     float zipf_theta = 0.6;
     for (int k = 0; k < thetas.size(); k++)
     {
-        // sleep(60);
+        if (REST)
+        {
+            sleep(60);
+            remove_cache();
+        }
         std::default_random_engine gen;
         zipfian_int_distribution<int> dis(0, load_pos - 1, thetas[k]);
         rand_pos.clear();
@@ -358,7 +389,7 @@ void test_all_zipfian()
         us_times = timer.Microsecond("stop", "start");
         cout << "[Metic-Operate]: Operate " << tot << " theta: " << thetas[k] << ", "
              << "cost " << us_times / 1000000.0 << "s, "
-             << "iops " << (double)(tot) / (double)us_times * 1000000.0 << " ." << endl;
+             << "kops/s: " << (double)(tot) / (double)us_times * 1000.0 << " ." << endl;
         cout << "dram space use: " << (physical_memory_used_by_process() - init_dram_space_use) / 1024.0 / 1024.0 << " GB" << endl;
     }
 }
@@ -374,7 +405,7 @@ void init_opts(int argc, char *argv[])
         {"dbname", required_argument, NULL, 0},    // 4
         // {"workload", required_argument, NULL, 0},  // 5
         {"loadstype", required_argument, NULL, 0}, // 5
-        {"theta", required_argument, NULL, 0},     // 6
+        {"reverse", required_argument, NULL, 0},   // 6
         {"help", no_argument, NULL, 'h'},          // 7
         {NULL, 0, NULL, 0}};
 
@@ -408,7 +439,7 @@ void init_opts(int argc, char *argv[])
                 Loads_type = atoi(optarg);
                 break;
             case 6:
-                theta = atof(optarg);
+                Reverse = atoi(optarg);
                 break;
             case 7:
                 show_help(argv[0]);
@@ -440,8 +471,7 @@ void init_opts(int argc, char *argv[])
     cout << "GET_SIZE:              " << GET_SIZE << endl;
     cout << "DB  name:              " << dbName << endl;
     cout << "Loads type:            " << Loads_type << endl;
-    // cout << "Workload:              " << load_file << endl;
-    cout << "Theta:                 " << theta << endl;
+    cout << "Reverse:               " << Reverse << endl;
 
     switch (Loads_type)
     {
@@ -489,7 +519,15 @@ int main(int argc, char *argv[])
     db->Init();
     load();
     // db->Info();
-    test_uniform();
-    test_all_zipfian();
+    if (Reverse)
+    {
+        test_all_zipfian();
+        test_uniform();
+    }
+    else
+    {
+        test_uniform();
+        test_all_zipfian();
+    }
     return 0;
 }

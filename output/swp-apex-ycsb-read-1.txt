@@ -1,0 +1,40 @@
+2022年 10月 29日 星期六 01:28:45 CST
+THREAD NUMBER:         1
+LOAD_SIZE:             2000000
+PUT_SIZE:              0
+GET_SIZE:              10000000
+DB  name:              apex
+Loads type:            3
+Reverse:               1
+read 2000000 values from /home/lbl/dataset/generate_random_ycsb.dat in 15 ms (133.333 M values/s)
+before newdb, dram space use: 0.021759 GB
+creating a new pool
+pool opened at: 0x7f8ec0000000
+Intial allocator: 1
+Start loading ....
+[Metic-Load]: Load 2000000: cost 2.83198s, kops/s: 706.22 .
+------------------------------
+Start Testing Zipfian Workload
+wrong get: 92
+[Metic-Operate]: Operate 10000000 theta: 0.99, cost 1.79863s, kops/s: 5559.79 .
+dram space use: 0.148994 GB
+wrong get: 94
+[Metic-Operate]: Operate 10000000 theta: 0.95, cost 2.00016s, kops/s: 4999.6 .
+dram space use: 0.149208 GB
+wrong get: 122
+[Metic-Operate]: Operate 10000000 theta: 0.9, cost 2.23971s, kops/s: 4464.86 .
+dram space use: 0.149208 GB
+wrong get: 143
+[Metic-Operate]: Operate 10000000 theta: 0.8, cost 2.69688s, kops/s: 3707.98 .
+dram space use: 0.149208 GB
+wrong get: 137
+[Metic-Operate]: Operate 10000000 theta: 0.7, cost 3.0857s, kops/s: 3240.76 .
+dram space use: 0.149208 GB
+wrong get: 171
+[Metic-Operate]: Operate 10000000 theta: 0.6, cost 3.37402s, kops/s: 2963.82 .
+dram space use: 0.149208 GB
+------------------------------
+Start Testing Uniform Workload
+wrong get: 159
+[Metic-Operate]: Operate 10000000, cost 3.84791s, kops/s: 2598.82 .
+dram space use: 0.148994 GB

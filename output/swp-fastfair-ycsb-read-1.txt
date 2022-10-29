@@ -1,0 +1,39 @@
+2022年 10月 29日 星期六 01:48:36 CST
+THREAD NUMBER:         1
+LOAD_SIZE:             2000000
+PUT_SIZE:              0
+GET_SIZE:              10000000
+DB  name:              fastfair
+Loads type:            3
+Reverse:               1
+read 2000000 values from /home/lbl/dataset/generate_random_ycsb.dat in 15 ms (133.333 M values/s)
+before newdb, dram space use: 0.021759 GB
+before init btree
+init fastfair db
+Start loading ....
+[Metic-Load]: Load 2000000: cost 2.35329s, kops/s: 849.874 .
+------------------------------
+Start Testing Zipfian Workload
+wrong get: 0
+[Metic-Operate]: Operate 10000000 theta: 0.99, cost 2.74006s, kops/s: 3649.55 .
+dram space use: 0.0823402 GB
+wrong get: 0
+[Metic-Operate]: Operate 10000000 theta: 0.95, cost 3.05835s, kops/s: 3269.73 .
+dram space use: 0.0825539 GB
+wrong get: 0
+[Metic-Operate]: Operate 10000000 theta: 0.9, cost 3.45304s, kops/s: 2896 .
+dram space use: 0.0825539 GB
+wrong get: 0
+[Metic-Operate]: Operate 10000000 theta: 0.8, cost 4.16478s, kops/s: 2401.09 .
+dram space use: 0.0825539 GB
+wrong get: 0
+[Metic-Operate]: Operate 10000000 theta: 0.7, cost 4.68094s, kops/s: 2136.32 .
+dram space use: 0.0825539 GB
+wrong get: 0
+[Metic-Operate]: Operate 10000000 theta: 0.6, cost 5.01028s, kops/s: 1995.9 .
+dram space use: 0.0825539 GB
+------------------------------
+Start Testing Uniform Workload
+wrong get: 0
+[Metic-Operate]: Operate 10000000, cost 5.3922s, kops/s: 1854.53 .
+dram space use: 0.0823402 GB

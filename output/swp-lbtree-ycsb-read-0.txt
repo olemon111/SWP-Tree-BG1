@@ -1,0 +1,38 @@
+2022年 10月 29日 星期六 00:34:45 CST
+THREAD NUMBER:         1
+LOAD_SIZE:             2000000
+PUT_SIZE:              0
+GET_SIZE:              10000000
+DB  name:              lbtree
+Loads type:            3
+Reverse:               0
+read 2000000 values from /home/lbl/dataset/generate_random_ycsb.dat in 16 ms (125 M values/s)
+before newdb, dram space use: 0.0219078 GB
+init lbtree wrapper
+Start loading ....
+[Metic-Load]: Load 2000000: cost 2.59516s, kops/s: 770.667 .
+------------------------------
+Start Testing Uniform Workload
+wrong get: 0
+[Metic-Operate]: Operate 10000000, cost 5.63384s, kops/s: 1774.99 .
+dram space use: 0.445786 GB
+------------------------------
+Start Testing Zipfian Workload
+wrong get: 0
+[Metic-Operate]: Operate 10000000 theta: 0.6, cost 5.37482s, kops/s: 1860.53 .
+dram space use: 0.744019 GB
+wrong get: 0
+[Metic-Operate]: Operate 10000000 theta: 0.7, cost 5.11709s, kops/s: 1954.24 .
+dram space use: 1.04188 GB
+wrong get: 0
+[Metic-Operate]: Operate 10000000 theta: 0.8, cost 4.64461s, kops/s: 2153.04 .
+dram space use: 1.3399 GB
+wrong get: 0
+[Metic-Operate]: Operate 10000000 theta: 0.9, cost 4.00499s, kops/s: 2496.89 .
+dram space use: 1.63792 GB
+wrong get: 0
+[Metic-Operate]: Operate 10000000 theta: 0.95, cost 3.60262s, kops/s: 2775.75 .
+dram space use: 1.93595 GB
+wrong get: 0
+[Metic-Operate]: Operate 10000000 theta: 0.99, cost 3.27599s, kops/s: 3052.52 .
+dram space use: 2.23397 GB

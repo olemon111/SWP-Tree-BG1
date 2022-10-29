@@ -1,0 +1,19 @@
+2022年 10月 29日 星期六 09:29:11 CST
+THREAD NUMBER:         1
+LOAD_SIZE:             2000000
+PUT_SIZE:              10000000
+GET_SIZE:              0
+DB  name:              fastfair
+Loads type:            3
+Reverse:               1
+read 2000000 values from /home/lbl/dataset/generate_random_ycsb.dat in 17 ms (117.647 M values/s)
+before newdb, dram space use: 0.0217438 GB
+before init btree
+init fastfair db
+Start loading ....
+[Metic-Load]: Load 2000000: cost 3.73182s, kops/s: 535.931 .
+------------------------------
+Start Testing Uniform Workload
+wrong get: 0
+[Metic-Operate]: Operate 10000000, cost 57.0554s, kops/s: 175.268 .
+dram space use: 0.0821457 GB
