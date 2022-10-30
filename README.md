@@ -1,37 +1,30 @@
-# ComboTree
+# SWP-Tree
 
-## Request
+> 一种新的动态适应各种倾斜负载的基于混合介质的持久化学习索引结构
+>
+> 本项目为其背景测试
 
-**CPU flag**:
+### 测试方案：
 
-- *clflush*: clflush OR clflushopt OR clwb
-- *streaming store*: sse2 OR avx2 OR avx512vl
-- *bit instruction*: bmi1 AND bmi2
+- APEX (https://github.com/baotonglu/apex)
+- LB+Tree (https://github.com/schencoding/lbtree)
+- FAST&FAIR(https://github.com/DICL/FAST_FAIR)         
 
-**endian**: little endian
+### 测试工具
 
-**C++ standard**: C++11
+- YCSB（https://github.com/basicthinker/YCSB-C）          
 
-**Dependence**
-***PGM-Index***
-[https:] https://github.com/gvinciguerra/PGM-index.git
-    
-***Xindex***
-[https:] https://ipads.se.sjtu.edu.cn:1312/opensource/xindex.git
-<!-- [MKL]:
-添加intel源：
-yum -y install yum-utils
-yum-config-manager --add-repo https://yum.repos.intel.com/mkl/setup/intel-mkl.repo
-下载并安装MKL：
-yum install -y intel-mkl -->
-<!-- 内存检测 -->
-<!-- sudo valgrind --leak-check=full --show-reachable=yes --trace-children=yes -s -->
-**YCSB**
-./ycsb -db letree -threads 1 -P ../include/ycsb/workloads/
-./ycsb -db combotree -threads 1 -P ../include/ycsb/insert_ratio/
 
-**OSM**
-osmconvert: wget -O - http://m.m.i24.cc/osmconvert.c | cc -x c - -lz -O3 -o osmconvert
-pbftoosm: osmconvert region.pbf -o=region.osm
-statistics: osmconvert germany.osm.pbf --out-statistics
-osmtocsv: osmconvert shops.osm --all-to-nodes --csv="@id @lon @lat amenity shop name" --csv-headline
+### 测试负载
+- uniform负载
+- zipfian负载 (α参数取值：0.6，0.7，0.8，0.9，0.95，0.99)
+
+### 测试指标
+
+- 吞吐量(Kops/s)
+
+- DRAM空间占用(GB of DRAM )                                
+
+### 环境配置
+
+- 2 million KVs (8B key-8B value )，每个测试项执行10 million指令
