@@ -262,18 +262,34 @@ namespace alex
       std::swap(root_node_, other.root_node_);
     }
 
-    // zzy: get tree_h
-    void PrintInfo()
+    // // zzy: get tree_h
+    // void PrintInfo()
+    // {
+    //   int tree_h = 0;
+    //   for (NodeIterator node_it = NodeIterator(this); !node_it.is_end(); node_it.next())
+    //   {
+    //     if (node_it.current()->level_ > tree_h)
+    //     {
+    //       tree_h = node_it.current()->level_;
+    //     }
+    //   }
+    //   printf("tree_h = %d\n", tree_h);
+    // }
+    double get_DRAM_size()
     {
-      int tree_h = 0;
-      for (NodeIterator node_it = NodeIterator(this); !node_it.is_end(); node_it.next())
+      // DRAM size
+      double size = 0;
+      for (NodeIterator node_it = NodeIterator(this); !node_it.is_end();
+           node_it.next())
       {
-        if (node_it.current()->level_ > tree_h)
+        AlexNode<T, P> *cur = node_it.current();
+        if (cur->is_leaf_)
         {
-          tree_h = node_it.current()->level_;
+          AlexDataNode<T, P> *cur_data_node = reinterpret_cast<AlexDataNode<T, P> *>(cur);
+          size += cur_data_node->get_DRAM_size();
         }
       }
-      printf("tree_h = %d\n", tree_h);
+      return size;
     }
 
     void set_default_parameters()

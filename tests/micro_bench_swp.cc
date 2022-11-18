@@ -20,8 +20,8 @@
 #include "nvm_alloc.h"
 #include "utils.h"
 
-#define REST true
-// #define REST false
+// #define REST true
+#define REST false
 
 using combotree::ComboTree;
 using combotree::Random;
@@ -334,6 +334,7 @@ void test_uniform()
          << "cost " << us_times / 1000000.0 << "s, "
          << "kops/s: " << (double)(tot) / (double)us_times * 1000.0 << " ." << endl;
     cout << "dram space use: " << (physical_memory_used_by_process() - init_dram_space_use) / 1024.0 / 1024.0 << " GB" << endl;
+    db->Info();
 }
 
 void test_all_zipfian()
@@ -391,6 +392,7 @@ void test_all_zipfian()
              << "cost " << us_times / 1000000.0 << "s, "
              << "kops/s: " << (double)(tot) / (double)us_times * 1000.0 << " ." << endl;
         cout << "dram space use: " << (physical_memory_used_by_process() - init_dram_space_use) / 1024.0 / 1024.0 << " GB" << endl;
+        db->Info();
     }
 }
 
@@ -518,7 +520,7 @@ int main(int argc, char *argv[])
     init_opts(argc, argv);
     db->Init();
     load();
-    // db->Info();
+    db->Info();
     if (Reverse)
     {
         test_all_zipfian();

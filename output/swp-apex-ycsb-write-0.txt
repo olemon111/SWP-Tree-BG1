@@ -1,4 +1,4 @@
-2022年 10月 29日 星期六 00:55:26 CST
+2022年 11月 18日 星期五 17:58:37 CST
 THREAD NUMBER:         1
 LOAD_SIZE:             2000000
 PUT_SIZE:              10000000
@@ -6,35 +6,24 @@ GET_SIZE:              0
 DB  name:              apex
 Loads type:            3
 Reverse:               0
-read 2000000 values from /home/lbl/dataset/generate_random_ycsb.dat in 16 ms (125 M values/s)
-before newdb, dram space use: 0.0217667 GB
+read 400000000 values from /home/lbl/dataset/generate_random_ycsb.dat in 2051 ms (195.027 M values/s)
+before newdb, dram space use: 2.98721 GB
 creating a new pool
-pool opened at: 0x7f9480000000
+pool opened at: 0x7f2740000000
 Intial allocator: 1
 Start loading ....
-[Metic-Load]: Load 2000000: cost 2.82147s, kops/s: 708.85 .
+[Metic-Load]: Load 2000000: cost 2.65149s, kops/s: 754.293 .
+apex DRAM size: 5.20271 MB.
 ------------------------------
 Start Testing Uniform Workload
 wrong get: 0
-[Metic-Operate]: Operate 10000000, cost 4.49206s, kops/s: 2226.15 .
-dram space use: 0.148876 GB
+[Metic-Operate]: Operate 10000000, cost 7.31265s, kops/s: 1367.49 .
+dram space use: 0.156921 GB
 ------------------------------
 Start Testing Zipfian Workload
 wrong get: 0
-[Metic-Operate]: Operate 10000000 theta: 0.6, cost 3.34907s, kops/s: 2985.9 .
-dram space use: 0.148994 GB
+[Metic-Operate]: Operate 10000000 theta: 0.6, cost 4.42757s, kops/s: 2258.57 .
+dram space use: 0.157017 GB
 wrong get: 0
-[Metic-Operate]: Operate 10000000 theta: 0.7, cost 3.07577s, kops/s: 3251.22 .
-dram space use: 0.149208 GB
-wrong get: 0
-[Metic-Operate]: Operate 10000000 theta: 0.8, cost 2.68807s, kops/s: 3720.13 .
-dram space use: 0.149208 GB
-wrong get: 0
-[Metic-Operate]: Operate 10000000 theta: 0.9, cost 2.23538s, kops/s: 4473.51 .
-dram space use: 0.149208 GB
-wrong get: 0
-[Metic-Operate]: Operate 10000000 theta: 0.95, cost 2.02162s, kops/s: 4946.53 .
-dram space use: 0.149208 GB
-wrong get: 0
-[Metic-Operate]: Operate 10000000 theta: 0.99, cost 1.83461s, kops/s: 5450.76 .
-dram space use: 0.149208 GB
+[Metic-Operate]: Operate 10000000 theta: 0.7, cost 3.82447s, kops/s: 2614.74 .
+dram space use: 0.157017 GB

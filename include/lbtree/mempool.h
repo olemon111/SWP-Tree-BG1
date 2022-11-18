@@ -105,6 +105,7 @@ private:
    PMEMobjpool *pop;
 
 public:
+   double total_size; // used for calculation of DRAM space usage
    // ---
    // Initialization and basics
    // ---
@@ -190,6 +191,8 @@ public:
     */
    void *alloc(unsigned long long size)
    {
+      // printf("alloc %lld\n", size);
+      total_size += (size / (1024 * 1024.0));
 #ifdef POOL
       if (mempool_cur)
       {
@@ -238,6 +241,8 @@ public:
     */
    void *alloc_node(int size)
    {
+      total_size += (size / (1024 * 1024.0));
+      // printf("alloc node: %lf\n", total_size);
       if (mempool_free_node)
       {
          char *p;

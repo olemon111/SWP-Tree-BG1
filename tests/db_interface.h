@@ -11,6 +11,7 @@
 #include "fast-fair/btree.h"
 #include "nvm_alloc.h"
 #include "apex/apex.h"
+#include "apex/apex_nodes.h"
 #include "lbtree/lbtree_wrapper.hpp"
 #include "random.h"
 
@@ -194,7 +195,7 @@ namespace dbInter
       worker_id = 0;
       worker_thread_num = 1;
       the_thread_mempools.init(1, 4096, MEMPOOL_ALIGNMENT);
-      // cout << "mempools init" << endl;
+      cout << "mempools init" << endl;
       the_thread_nvmpools.init(1, pool_path_, pool_size_);
       // cout << "nvmpools init" << endl;
       char *nvm_addr = (char *)nvmpool_alloc(256);
@@ -205,7 +206,7 @@ namespace dbInter
 
     void Info()
     {
-      // tree_->PrintInfo();
+      cout << "lbtree dram size: " << the_thread_mempools.tm_pools[worker_id].total_size << " MB" << endl;
     }
 
     void Close()
@@ -309,6 +310,7 @@ namespace dbInter
 
     void Info()
     {
+      cout << "apex DRAM size: " << apex_->get_DRAM_size() / (1024 * 1024.0) << " MB." << endl;
       // apex_->PrintInfo();
     }
 
